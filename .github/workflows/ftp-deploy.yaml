@@ -1,0 +1,37 @@
+---
+name: FTP Deploy
+# description: Deploy code to FTP server.
+
+on:
+  workflow_call:
+
+env:
+  dir: tmp
+
+jobs:
+  ftp-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Display
+        run: echo ${{ env.port }}
+      - name: Install Poetry
+        uses: ./.github/actions/poetry
+      - name: Prepare Content
+        shell: bash
+        run: |
+          mkdir ${{ env.dir }} &&
+          poetry export -o ${{ env.dir }}/requirements.txt --only django &&
+          cd src && cp -r project app manage.py ../${{ env.dir }}
+      - name: Deploy FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          port: ${{ secrets.FTP_PORT }}
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./${{ env.dir }}/
+          server-dir: ./
+          log-level: verbose

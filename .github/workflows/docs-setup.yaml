@@ -1,0 +1,45 @@
+---
+name: Docs Setup
+# description: Setup logic to deploy documentation.
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  workflow_run:
+    branches: [main]
+    types: [completed]
+    workflows: [CI]
+
+permissions:
+  contents: write
+
+jobs:
+  filter:
+    if: |
+      github.event_name != 'workflow_dispatch' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      docs: ${{ steps.filter.outputs.docs }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Filter Changes
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            docs:
+              - "mkdocs.yaml"
+              - "docs/**"
+
+  docs-push:
+    needs: filter
+    if: needs.filter.outputs.docs == 'true'
+    uses: ./.github/workflows/docs-deploy.yaml
+
+  docs-dispatch:
+    if: |
+      github.event_name == 'workflow_dispatch' &&
+      github.event.ref == 'refs/heads/main'
+    uses: ./.github/workflows/docs-deploy.yaml

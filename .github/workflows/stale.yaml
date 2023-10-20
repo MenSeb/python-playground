@@ -1,0 +1,44 @@
+---
+name: Stale
+# description: Close stale issues and PRs.
+
+on:
+  schedule:
+    - cron: 0 0 1 * *
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v8
+        with:
+          days-before-issue-stale: 20
+          days-before-issue-close: 5
+          stale-issue-label: "stale(issue): inactive"
+          stale-issue-message: |
+            This issue has been automatically marked as stale because it
+            has not had recent activity. It will be closed if no further
+            activity occurs.
+            Thank you for your contributions.
+          close-issue-message: |
+            Closing this issue after a prolonged period of inactivity.
+            Please create a new issue with up-to-date information if needed.
+            Thank you.
+          days-before-pr-stale: 20
+          days-before-pr-close: 5
+          stale-pr-label: "stale(pull): inactive"
+          stale-pr-message: |
+            This PR has been automatically marked as stale because it has not
+            had recent activity. Remove stale label or comment or it will be
+            closed if no further activity occurs.
+            Thank you for your contributions.
+          close-pr-message: |
+            Closing this PR after a prolonged period of inactivity.
+            Please create a new PR with up-to-date information if needed.
+            Thank you.
+          operations-per-run: 30

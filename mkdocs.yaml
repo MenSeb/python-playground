@@ -1,0 +1,36 @@
+---
+site_author: Sébastien Menard
+site_description: Documentation for python playground.
+site_name: Python Playground
+site_url: https://menseb.github.io/python-playground
+repo_url: https://github.com/MenSeb/python-playground
+copyright: MIT License - Copyright (c) 2023 Sébastien Menard
+
+nav:
+  - Home: index.md
+  - Temp: temp.md
+  - Temp: temp.md
+  - Temp: temp.md
+
+plugins:
+  - mkdocstrings # generate from docstrings
+  - search # search functionality
+
+theme:
+  locale: en
+  # name: mkdocs
+  name: readthedocs
+  # logo: assets/images/logo.svg
+  # favicon: assets/images/favicon.ico
+# extra_css:
+#   - assets/stylesheets/styles.css
+
+# How could this works for multiple languages ??
+# extra:
+#   alternate:
+#     - name: English
+#       link: /en/
+#       lang: en
+#     - name: French
+#       link: /fr/
+#       lang: fr

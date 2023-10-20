@@ -1,0 +1,26 @@
+---
+name: Docs Deploy
+# description: Deploy documentation to GitHub Pages.
+
+on:
+  workflow_call:
+
+env:
+  dir: tmp
+
+jobs:
+  docs-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Setup Python
+        uses: ./.github/actions/python
+      - name: Install Poetry
+        uses: ./.github/actions/poetry
+      - name: Install Virtualenv
+        uses: ./.github/actions/virtualenv
+        with:
+          groups: --only docs
+      - name: Deploy Documentation
+        run: poetry run mkdocs gh-deploy --force

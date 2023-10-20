@@ -1,0 +1,127 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "python-playground"
+version = "0.1.0"
+description = "Python Playground."
+keywords = ["python", "playground"]
+authors = ["MenSeb <sebastien.menard.github@gmail.com>"]
+maintainers = ["MenSeb <sebastien.menard.github@gmail.com>"]
+repository = "https://github.com/MenSeb/python-playground.git"
+homepage = "https://github.com/MenSeb/python-playground.git"
+documentation = "https://menseb.github.io/python-playground/docs"
+license = "MIT"
+readme = "README.md"
+classifiers = [
+  "Environment :: Web Environment",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: English",
+  "Natural Language :: French",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+]
+packages = []
+include = [{ path = "tests", format = "sdist" }]
+exclude = []
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "$version"
+version_scheme = "pep440"
+version_provider = "poetry"
+update_changelog_on_bump = true
+major_version_zero = true
+
+[tool.coverage.html]
+directory = "./coverage/html"
+
+[tool.coverage.lcov]
+output = "./coverage/lcov.info"
+
+[tool.coverage.report]
+fail_under = 100
+show_missing = true
+exclude_lines = ["if __name__ == \"__main__\":", "def __repr__", "def __str__"]
+
+[tool.coverage.run]
+branch = true
+parallel = true
+source = ["src"]
+data_file = "coverage/.coverage"
+omit = ["**/__init__.py", "**/__main__.py"]
+
+[tool.djlint]
+use_gitignore = true
+
+[tool.mypy]
+ignore_missing_imports = true
+
+[tool.pymarkdown]
+plugins.line-length.enabled = false
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+testpaths = ["tests"]
+addopts = [
+  "--verbose",
+  "--import-mode=importlib",
+  "--cov-report=html",
+  "--cov-report=lcov",
+  "--cov-report=term-missing",
+]
+
+[tool.ruff]
+# A list of rule codes or prefixes to enable.
+select = ["ALL"]
+
+# A list of rule codes or prefixes to ignore.
+ignore = ["D203", "D213"]
+
+# A list of rule codes or prefixes to consider autofixable
+fixable = ["ALL"]
+
+# A list of rule codes or prefixes to consider non-autofix-able.
+unfixable = []
+
+# Exclude a variety of commonly ignored directories.
+exclude = []
+
+# A list of mappings from file pattern to rule codes or prefixes to exclude.
+[tool.ruff.per-file-ignores]
+"tests/**/*.py" = ["S101", "PLR2004"]
+
+[tool.yamlfix]
+comments_min_spaces_from_content = 1
+preserve_quotes = true
+whitelines = 1
+
+
+[tool.poetry.dependencies]
+python = "^3.11.1"
+
+
+[tool.poetry.group.dev.dependencies]
+commitizen = "^3.7.0"
+mypy = "^1.5.1"
+yamlfix = "^1.14.0"
+
+
+[tool.poetry.group.lint.dependencies]
+ruff = "^0.0.286"
+black = "^23.7.0"
+pymarkdownlnt = "^0.9.13.3"
+yamllint = "^1.32.0"
+djlint = "^1.32.1"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.0"
+pytest-mock = "^3.11.1"
+pytest-cov = "^4.1.0"
+
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = { extras = ["i18n"], version = "^1.5.2" }
+mkdocstrings = { extras = ["python"], version = "^0.22.0" }
