@@ -100,6 +100,10 @@ whitelines = 1
 
 [tool.poetry.dependencies]
 python = "^3.11.1"
+python-dotenv = "^1.0.0"
+flask = "^3.0.0"
+watchdog = "^3.0.0"
+gevent = "^23.9.1"
 
 
 [tool.poetry.group.dev.dependencies]
