@@ -122,9 +122,9 @@ class UserAgents:
             list[str]:
                 The list of user agents.
         """
-        user_agents = self.load_user_agents()
+        agents = self.load_user_agents()
 
         return random.sample(
-            population=user_agents,
-            k=len(user_agents) if limit is None else limit,
+            population=agents,
+            k=len(agents) if limit is None else limit,
         )
