@@ -34,6 +34,10 @@ __pycache__/
 # ruff
 .ruff_cache/
 
+# source
+datas/
+temp/
+
 # tests
 coverage/
 
