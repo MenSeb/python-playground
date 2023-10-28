@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import random
-from logging import INFO, basicConfig, info
+from logging import INFO, basicConfig, info, warning
 
 import requests
 from requests import exceptions
@@ -34,7 +34,7 @@ class Session:
         self: Session,
         url: str,
         agent: str | None = None,
-        timeout: float = 5,
+        timeout: float = 10,
     ) -> requests.Response:
         """Request a URL using a session proxy.
 
@@ -63,6 +63,7 @@ class Session:
         url: str,
         proxies: list[str],
         agents: list[str],
+        timeout: float | None = None,
     ) -> requests.Response | None:
         """Request a URL with a session using different proxies and user agents.
 
@@ -84,19 +85,19 @@ class Session:
             self.proxy_session(proxy=proxy)
             agent = random.choice(seq=agents)  # noqa: S311
 
-            info(f"Session with proxy {proxy} and agent {agent}.")
+            info(f"Session with proxy {proxy} and agent {agent}.\n")
 
             try:
-                response = self.request_session(url=url)
+                response = self.request_session(url=url, timeout=timeout)
 
                 if response.ok:
-                    info("Session SUCCESS")
+                    info("Session SUCCESS\n")
                     return response
 
-                info(f"Session FAILED with status code {response.status_code}.")
+                warning(f"Session FAILED with status code {response.status_code}.\n")
                 continue
             except exceptions.RequestException as error:
-                info(f"Session FAILE with error {error.errno}.")
+                warning(f"Session FAILED with error {error}.\n")
                 continue
 
         return None
