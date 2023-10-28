@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import functools
 from dataclasses import asdict, dataclass
-from logging import INFO, basicConfig, info
+from logging import INFO, basicConfig
 from pathlib import Path
 from typing import Any, Callable, NamedTuple
 
@@ -13,7 +13,6 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup, ResultSet, Tag
 from pandas import DataFrame
-from requests import exceptions
 
 basicConfig(level=INFO)
 
@@ -94,28 +93,46 @@ class Query(NamedTuple):
 
 
 class Proxies:
-    """Interface representating proxy utilities."""
+    """Interface representating proxy utilities.
+
+    MDN Web Docs:
+    -
+    https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling
+
+    Wikipedia:
+    -
+    https://en.wikipedia.org/wiki/Proxy_server
+    """
 
     def __init__(
         self: Proxies,
-        url: str = "https://free-proxy-list.net/",
         filename: str = "proxies",
         folder: str = "datas",
         directory: Path = Path(__file__).parent,
     ) -> None:
-        self.url = url
-        self.filename = filename
-        self.folder = folder
-        self.directory = directory
-        self.path = self.directory / self.folder
-        self.path_html = self.path / f"{self.filename}.html"
-        self.path_csv = self.path / f"{self.filename}.csv"
+        """Interface representating proxy utilities.
+
+        Args:
+            filename (str, optional):
+                The filename to save the list of user agents.
+                Defaults to "proxies".
+            folder (str, optional):
+                The folder to save the list of user agents.
+                Defaults to "datas".
+            directory (Path, optional):
+                The directory to save the list of user agents.
+                Defaults to Path(__file__).parent.
+        """
+        path = directory / folder
+        self.path_html = path / f"{filename}.html"
+        self.path_csv = path / f"{filename}.csv"
+        self.url = "https://free-proxy-list.net/"
         self.headers = Headers()
         self.operators = Operators()
         self.session = requests.Session()
         self.keys = list(asdict(self.headers).keys())
 
-    def fetch_proxies(
+    def fetch(
         self: Proxies,
     ) -> None:
         """Fetch and save the proxy HTML table."""
@@ -124,7 +141,7 @@ class Proxies:
         self.path_html.parent.mkdir(parents=True, exist_ok=True)
         self.path_html.write_text(data=str(soup.find("table")), encoding="utf-8")
 
-    def format_proxies(
+    def convert(
         self: Proxies,
     ) -> None:
         """Convert the proxy HTML table to CSV format."""
@@ -132,9 +149,16 @@ class Proxies:
         rows: ResultSet[Tag] = table.find("tbody").find_all("tr")
         rows_cells: list[ResultSet[Tag]] = [row.find_all("td") for row in rows]
         datas: list[str] = [(cell.string for cell in cells) for cells in rows_cells]
-        self.save_proxies(datas=datas)
+        self.save(datas=datas)
 
-    def query_proxies(
+    def refresh(
+        self: Proxies,
+    ) -> None:
+        """Refresh the list of proxies."""
+        self.fetch()
+        self.convert()
+
+    def query(
         self: Proxies,
         queries: list[Query],
     ) -> DataFrame:
@@ -143,7 +167,7 @@ class Proxies:
         Usage:
         -----
 
-        dataframe = self.query_proxies(
+        dataframe = self.query(
             queries=[
                 Query(data="US", key=keys.code, operator=operators.eq),
 
@@ -161,14 +185,14 @@ class Proxies:
             DataFrame:
                 The filtered dataframe.
         """
-        dataframe = self.load_proxies()
+        dataframe = self.load()
         conditions = [
             operator(data, dataframe.get(key)) for data, key, operator in queries
         ]
         reducer = functools.reduce(np.logical_and, conditions)
         return dataframe[reducer]
 
-    def extract_proxies(
+    def extract(
         self: Proxies,
         limit: int | None = None,
         dataframe: DataFrame | None = None,
@@ -188,13 +212,11 @@ class Proxies:
                 The list of proxies.
         """
         datas = (
-            self.load_proxies(limit=limit)
-            if dataframe is None
-            else dataframe.head(n=limit)
+            self.load(limit=limit) if dataframe is None else dataframe.head(n=limit)
         )[[self.headers.host, self.headers.port]]
         return [f"{host}:{port}" for _, (host, port) in datas.iterrows()]
 
-    def load_proxies(
+    def load(
         self: Proxies,
         limit: int | None = None,
     ) -> DataFrame:
@@ -212,7 +234,7 @@ class Proxies:
         """
         return pd.read_csv(filepath_or_buffer=self.path_csv, nrows=limit)
 
-    def save_proxies(
+    def save(
         self: Proxies,
         datas: list[str],
         path: Path | None = None,
@@ -228,74 +250,3 @@ class Proxies:
         """
         dataframe = DataFrame(data=datas, columns=self.keys)
         dataframe.to_csv(path_or_buf=path or self.path_csv, index=False)
-
-    def session_proxy(
-        self: Proxies,
-        proxy: str,
-    ) -> None:
-        """Assign a proxy to a requests session.
-
-        Args:
-        ----
-            proxy (str):
-                The session proxy.
-        """
-        self.session.proxies = {"http": proxy, "https": proxy}
-
-    def session_request(
-        self: Proxies,
-        url: str,
-        timeout: float = 5,
-    ) -> requests.Response:
-        """Request a URL using a session proxy.
-
-        Args:
-        ----
-            url (str):
-                The URL to request.
-            timeout (float, optional):
-                The time (seconds) to wait before giving up. Defaults to 5.
-
-        Returns
-        -------
-            requests.Response:
-                The HTTP request reponse.
-        """
-        return self.session.get(url=url, timeout=timeout)
-
-    def session_requests(
-        self: Proxies,
-        url: str,
-        proxies: list[str],
-    ) -> requests.Response | None:
-        """Request a URL with a session using different proxies.
-
-        Args:
-        ----
-            url (str):
-                The URL to request.
-            proxies (list[str]):
-                The list of proxies.
-
-        Returns
-        -------
-            requests.Response | None:
-                The HTTP request reponse.
-        """
-        for proxy in proxies:
-            self.session_proxy(proxy=proxy)
-
-            try:
-                response = self.session_request(url=url)
-
-                if response.ok:
-                    info(f"PROXY SUCCESS: {proxy}")
-                    return response
-
-                info(f"PROXY FAILED: {proxy} - RESPONSE: {response.status_code}")
-                continue
-            except exceptions.RequestException:
-                info(f"PROXY FAILED: {proxy}")
-                continue
-
-        return None
