@@ -43,17 +43,14 @@ class Session:
     def request(
         self: Session,
         url: str,
-        agent: str | None = None,
         timeout: float = 10,
     ) -> requests.Response:
-        """Request a URL using a session proxy.
+        """Request a URL using a session.
 
         Args:
         ----
             url (str):
                 The URL to request.
-            agent (str):
-                The user agent for the headers.
             timeout (float, optional):
                 The time (seconds) to wait before giving up. Defaults to 5.
 
@@ -62,11 +59,7 @@ class Session:
             requests.Response:
                 The HTTP request reponse.
         """
-        return self.session.get(
-            url=url,
-            timeout=timeout,
-            headers=None if agent is None else {"User-Agent": agent},
-        )
+        return self.session.get(url=url, timeout=timeout)
 
     def requests(
         self: Session,
@@ -94,6 +87,7 @@ class Session:
         for proxy in proxies:
             self.proxy(proxy=proxy)
             agent = random.choice(seq=agents)  # noqa: S311
+            self.session.headers.update({"User-Agent": agent})
 
             info(f"Session with proxy {proxy} and agent {agent}.\n")
 
