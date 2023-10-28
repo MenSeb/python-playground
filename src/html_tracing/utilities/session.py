@@ -12,7 +12,16 @@ basicConfig(level=INFO)
 
 
 class Session:
-    """Interface representing a requests session."""
+    """Interface representing a requests session.
+
+    MDN Web Docs:
+    -
+    https://developer.mozilla.org/en-US/docs/Web/HTTP/Session
+
+    Wikipedia
+    -
+    https://en.wikipedia.org/wiki/Session_(computer_science)
+    """
 
     def __init__(self: Session) -> None:
         """Interface representing a requests session."""

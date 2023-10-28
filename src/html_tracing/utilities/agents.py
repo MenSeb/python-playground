@@ -18,15 +18,11 @@ class UserAgents:
 
     MDN Web Docs:
     -
-    The User-Agent request header is a characteristic string that lets servers and
-    network peers identify the application, operating system, vendor, and/or version
-    of the requesting user agent.
+    https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent
 
     Wikepedia:
     -
-    The user agent plays the role of the client in a client-server system. The HTTP
-    User-Agent header is intended to clearly identify the agent to the server. This
-    header can be omitted/spoofed, so some websites use other agent detection methods.
+    https://en.wikipedia.org/wiki/User_agent
     """
 
     def __init__(
