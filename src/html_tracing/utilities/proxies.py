@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import functools
 from dataclasses import asdict, dataclass
-from logging import INFO, basicConfig, info
+from logging import INFO, basicConfig
 from pathlib import Path
 from typing import Any, Callable, NamedTuple
 
@@ -13,7 +13,6 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup, ResultSet, Tag
 from pandas import DataFrame
-from requests import exceptions
 
 basicConfig(level=INFO)
 
@@ -254,74 +253,3 @@ class Proxies:
         """
         dataframe = DataFrame(data=datas, columns=self.keys)
         dataframe.to_csv(path_or_buf=path or self.path_csv, index=False)
-
-    def session_proxy(
-        self: Proxies,
-        proxy: str,
-    ) -> None:
-        """Assign a proxy to a requests session.
-
-        Args:
-        ----
-            proxy (str):
-                The session proxy.
-        """
-        self.session.proxies = {"http": proxy, "https": proxy}
-
-    def session_request(
-        self: Proxies,
-        url: str,
-        timeout: float = 5,
-    ) -> requests.Response:
-        """Request a URL using a session proxy.
-
-        Args:
-        ----
-            url (str):
-                The URL to request.
-            timeout (float, optional):
-                The time (seconds) to wait before giving up. Defaults to 5.
-
-        Returns
-        -------
-            requests.Response:
-                The HTTP request reponse.
-        """
-        return self.session.get(url=url, timeout=timeout)
-
-    def session_requests(
-        self: Proxies,
-        url: str,
-        proxies: list[str],
-    ) -> requests.Response | None:
-        """Request a URL with a session using different proxies.
-
-        Args:
-        ----
-            url (str):
-                The URL to request.
-            proxies (list[str]):
-                The list of proxies.
-
-        Returns
-        -------
-            requests.Response | None:
-                The HTTP request reponse.
-        """
-        for proxy in proxies:
-            self.session_proxy(proxy=proxy)
-
-            try:
-                response = self.session_request(url=url)
-
-                if response.ok:
-                    info(f"PROXY SUCCESS: {proxy}")
-                    return response
-
-                info(f"PROXY FAILED: {proxy} - RESPONSE: {response.status_code}")
-                continue
-            except exceptions.RequestException:
-                info(f"PROXY FAILED: {proxy}")
-                continue
-
-        return None
