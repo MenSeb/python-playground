@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import random
 from logging import INFO, basicConfig, info
 from pathlib import Path
 
@@ -34,6 +35,19 @@ class UserAgents:
         folder: str = "datas",
         directory: Path = Path(__file__).parent,
     ) -> None:
+        """Interface representing user agents utilities.
+
+        Args:
+            filename (str, optional):
+                The filename to save the list of user agents.
+                Defaults to "user-agents".
+            folder (str, optional):
+                The folder to save the list of user agents.
+                Defaults to "datas".
+            directory (Path, optional):
+                The directory to save the list of user agents.
+                Defaults to Path(__file__).parent.
+        """
         path = directory / folder
         self.path_html = path / f"{filename}.html"
         self.path_json = path / f"{filename}.json"
@@ -72,7 +86,7 @@ class UserAgents:
         data: list[str],
         path: Path | None = None,
     ) -> None:
-        """Save the user agents list as a JSON.
+        """Save the user agents list.
 
         Args:
         ----
@@ -86,7 +100,7 @@ class UserAgents:
     def load_user_agents(
         self: UserAgents,
     ) -> list[str]:
-        """Load the user agents JSON.
+        """Load the user agents list.
 
         Returns
         -------
@@ -94,3 +108,23 @@ class UserAgents:
                 The list of user agents.
         """
         return json.loads(s=self.path_json.read_text())
+
+    def extract_user_agents(self: UserAgents, limit: int | None = None) -> list[str]:
+        """Extract a list of random user agents.
+
+        Args:
+        ----
+            limit (int | None, optional):
+                The maximum number of user agents. Defaults to None.
+
+        Returns
+        -------
+            list[str]:
+                The list of user agents.
+        """
+        user_agents = self.load_user_agents()
+
+        return random.sample(
+            population=user_agents,
+            k=len(user_agents) if limit is None else limit,
+        )
