@@ -140,7 +140,7 @@ class Proxies:
         self.session = requests.Session()
         self.keys = list(asdict(self.headers).keys())
 
-    def fetch_proxies(
+    def fetch(
         self: Proxies,
     ) -> None:
         """Fetch and save the proxy HTML table."""
@@ -149,7 +149,7 @@ class Proxies:
         self.path_html.parent.mkdir(parents=True, exist_ok=True)
         self.path_html.write_text(data=str(soup.find("table")), encoding="utf-8")
 
-    def format_proxies(
+    def convert(
         self: Proxies,
     ) -> None:
         """Convert the proxy HTML table to CSV format."""
@@ -157,9 +157,16 @@ class Proxies:
         rows: ResultSet[Tag] = table.find("tbody").find_all("tr")
         rows_cells: list[ResultSet[Tag]] = [row.find_all("td") for row in rows]
         datas: list[str] = [(cell.string for cell in cells) for cells in rows_cells]
-        self.save_proxies(datas=datas)
+        self.save(datas=datas)
 
-    def query_proxies(
+    def refresh(
+        self: Proxies,
+    ) -> None:
+        """Refresh the list of proxies."""
+        self.fetch()
+        self.convert()
+
+    def query(
         self: Proxies,
         queries: list[Query],
     ) -> DataFrame:
@@ -168,7 +175,7 @@ class Proxies:
         Usage:
         -----
 
-        dataframe = self.query_proxies(
+        dataframe = self.query(
             queries=[
                 Query(data="US", key=keys.code, operator=operators.eq),
 
@@ -186,14 +193,14 @@ class Proxies:
             DataFrame:
                 The filtered dataframe.
         """
-        dataframe = self.load_proxies()
+        dataframe = self.load()
         conditions = [
             operator(data, dataframe.get(key)) for data, key, operator in queries
         ]
         reducer = functools.reduce(np.logical_and, conditions)
         return dataframe[reducer]
 
-    def extract_proxies(
+    def extract(
         self: Proxies,
         limit: int | None = None,
         dataframe: DataFrame | None = None,
@@ -213,13 +220,11 @@ class Proxies:
                 The list of proxies.
         """
         datas = (
-            self.load_proxies(limit=limit)
-            if dataframe is None
-            else dataframe.head(n=limit)
+            self.load(limit=limit) if dataframe is None else dataframe.head(n=limit)
         )[[self.headers.host, self.headers.port]]
         return [f"{host}:{port}" for _, (host, port) in datas.iterrows()]
 
-    def load_proxies(
+    def load(
         self: Proxies,
         limit: int | None = None,
     ) -> DataFrame:
@@ -237,7 +242,7 @@ class Proxies:
         """
         return pd.read_csv(filepath_or_buffer=self.path_csv, nrows=limit)
 
-    def save_proxies(
+    def save(
         self: Proxies,
         datas: list[str],
         path: Path | None = None,
@@ -253,10 +258,3 @@ class Proxies:
         """
         dataframe = DataFrame(data=datas, columns=self.keys)
         dataframe.to_csv(path_or_buf=path or self.path_csv, index=False)
-
-    def refresh_proxies(
-        self: Proxies,
-    ) -> None:
-        """Refresh the list of proxies."""
-        self.fetch_proxies()
-        self.format_proxies()

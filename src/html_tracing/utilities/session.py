@@ -15,9 +15,10 @@ class Session:
     """Interface representing a requests session."""
 
     def __init__(self: Session) -> None:
+        """Interface representing a requests session."""
         self.session = requests.Session()
 
-    def proxy_session(
+    def proxy(
         self: Session,
         proxy: str,
     ) -> None:
@@ -30,7 +31,7 @@ class Session:
         """
         self.session.proxies = {"http": proxy, "https": proxy}
 
-    def request_session(
+    def request(
         self: Session,
         url: str,
         agent: str | None = None,
@@ -58,7 +59,7 @@ class Session:
             headers=None if agent is None else {"User-Agent": agent},
         )
 
-    def requests_session(
+    def requests(
         self: Session,
         url: str,
         proxies: list[str],
@@ -82,13 +83,13 @@ class Session:
                 The HTTP request reponse.
         """
         for proxy in proxies:
-            self.proxy_session(proxy=proxy)
+            self.proxy(proxy=proxy)
             agent = random.choice(seq=agents)  # noqa: S311
 
             info(f"Session with proxy {proxy} and agent {agent}.\n")
 
             try:
-                response = self.request_session(url=url, timeout=timeout)
+                response = self.request(url=url, timeout=timeout)
 
                 if response.ok:
                     info("Session SUCCESS\n")

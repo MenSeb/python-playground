@@ -54,7 +54,7 @@ class UserAgents:
         self.endpoints = ["windows", "macos", "ios", "chrome-os", "android"]
         self.url = "https://www.whatismybrowser.com/guides/the-latest-user-agent/"
 
-    def fetch_user_agents(
+    def fetch(
         self: UserAgents,
     ) -> None:
         """Fetch and save the user agents HTML tables."""
@@ -69,7 +69,7 @@ class UserAgents:
         self.path_html.parent.mkdir(parents=True, exist_ok=True)
         self.path_html.write_text(data=data, encoding="utf-8")
 
-    def format_user_agents(
+    def convert(
         self: UserAgents,
     ) -> None:
         """Convert the user agents HTML tables to JSON format."""
@@ -79,9 +79,16 @@ class UserAgents:
         rows: list[Tag] = [row for body in bodies for row in body.find_all("tr")]
         lists = [row.select("td:last-child ul li span") for row in rows]
         data = [span.string for spans in lists for span in spans]
-        self.save_user_agents(data=data)
+        self.save(data=data)
 
-    def save_user_agents(
+    def refresh(
+        self: UserAgents,
+    ) -> None:
+        """Refresh the list of user agents."""
+        self.fetch()
+        self.convert()
+
+    def save(
         self: UserAgents,
         data: list[str],
         path: Path | None = None,
@@ -97,7 +104,7 @@ class UserAgents:
         """
         (path or self.path_json).write_text(json.dumps(obj=data))
 
-    def load_user_agents(
+    def load(
         self: UserAgents,
     ) -> list[str]:
         """Load the user agents list.
@@ -109,7 +116,10 @@ class UserAgents:
         """
         return json.loads(s=self.path_json.read_text())
 
-    def extract_user_agents(self: UserAgents, limit: int | None = None) -> list[str]:
+    def extract(
+        self: UserAgents,
+        limit: int | None = None,
+    ) -> list[str]:
         """Extract a list of random user agents.
 
         Args:
@@ -122,16 +132,9 @@ class UserAgents:
             list[str]:
                 The list of user agents.
         """
-        agents = self.load_user_agents()
+        agents = self.load()
 
         return random.sample(
             population=agents,
             k=len(agents) if limit is None else limit,
         )
-
-    def refresh_user_agents(
-        self: UserAgents,
-    ) -> None:
-        """Refresh the list of proxies."""
-        self.fetch_user_agents()
-        self.format_user_agents()
