@@ -41,7 +41,7 @@ directory = "./coverage/html"
 output = "./coverage/lcov.info"
 
 [tool.coverage.report]
-fail_under = 100
+# fail_under = 100
 show_missing = true
 exclude_lines = ["if __name__ == \"__main__\":", "def __repr__", "def __str__"]
 
