@@ -128,3 +128,10 @@ class UserAgents:
             population=agents,
             k=len(agents) if limit is None else limit,
         )
+
+    def refresh_user_agents(
+        self: UserAgents,
+    ) -> None:
+        """Refresh the list of proxies."""
+        self.fetch_user_agents()
+        self.format_user_agents()

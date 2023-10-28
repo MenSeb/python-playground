@@ -253,3 +253,10 @@ class Proxies:
         """
         dataframe = DataFrame(data=datas, columns=self.keys)
         dataframe.to_csv(path_or_buf=path or self.path_csv, index=False)
+
+    def refresh_proxies(
+        self: Proxies,
+    ) -> None:
+        """Refresh the list of proxies."""
+        self.fetch_proxies()
+        self.format_proxies()
