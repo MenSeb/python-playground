@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import random
-from logging import INFO, basicConfig, info
+from logging import INFO, basicConfig
 from pathlib import Path
 
 import requests
@@ -58,7 +58,6 @@ class UserAgents:
 
         for endpoint in self.endpoints:
             response = requests.get(url=f"{self.url}{endpoint}", timeout=10)
-            info(response.ok, response.status_code)
             soup = BeautifulSoup(markup=response.content, features="html.parser")
             data += str(soup.find("table"))
 
