@@ -20,7 +20,24 @@ basicConfig(level=INFO)
 
 @dataclass
 class Operators:
-    """Interface representing dataframe comparison operators."""
+    """Interface representing dataframe comparison operators.
+
+    MDN Web Docs:
+    -
+    When navigating through different networks of the Internet, proxy servers and HTTP
+    tunnels are facilitating access to content on the World Wide Web. A proxy can be on
+    the user's local computer, or anywhere between the user's computer and a destination
+    server on the Internet.
+
+    Wikipedia:
+    -
+    In computer networking, a proxy server is a server application that acts as an
+    intermediary between a client requesting a resource and the server providing that
+    resource. It improves privacy, security, and performance in the process. Instead of
+    connecting directly to a server that can fulfill a request for a resource, such as a
+    file or web page, the client directs the request to the proxy server, which
+    evaluates the request and performs the required network transactions.
+    """
 
     def eq(
         self: Operators,
