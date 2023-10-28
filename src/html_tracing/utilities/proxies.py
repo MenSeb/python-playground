@@ -115,18 +115,27 @@ class Proxies:
 
     def __init__(
         self: Proxies,
-        url: str = "https://free-proxy-list.net/",
         filename: str = "proxies",
         folder: str = "datas",
         directory: Path = Path(__file__).parent,
     ) -> None:
-        self.url = url
-        self.filename = filename
-        self.folder = folder
-        self.directory = directory
-        self.path = self.directory / self.folder
-        self.path_html = self.path / f"{self.filename}.html"
-        self.path_csv = self.path / f"{self.filename}.csv"
+        """Interface representating proxy utilities.
+
+        Args:
+            filename (str, optional):
+                The filename to save the list of user agents.
+                Defaults to "proxies".
+            folder (str, optional):
+                The folder to save the list of user agents.
+                Defaults to "datas".
+            directory (Path, optional):
+                The directory to save the list of user agents.
+                Defaults to Path(__file__).parent.
+        """
+        path = directory / folder
+        self.path_html = path / f"{filename}.html"
+        self.path_csv = path / f"{filename}.csv"
+        self.url = "https://free-proxy-list.net/"
         self.headers = Headers()
         self.operators = Operators()
         self.session = requests.Session()
