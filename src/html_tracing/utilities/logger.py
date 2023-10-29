@@ -15,11 +15,13 @@ class Logger:
         *,
         debugging: bool = False,
         tracing: bool = False,
+        newline: bool = True,
     ) -> None:
         self.debugging = debugging
         self.tracing = tracing
 
         logging.basicConfig(
+            format="%(msg)s" + "\n" if newline else "",
             level=logging.DEBUG if debugging else logging.INFO,
         )
 
@@ -60,7 +62,7 @@ class Logger:
         if msg is not None:
             message += f" - {msg}"
 
-        self.info_(msg=f"{message}\n")
+        self.info_(msg=f"{message}")
 
 
 logger = Logger(tracing=True)
