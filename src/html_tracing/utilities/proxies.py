@@ -161,6 +161,7 @@ class Proxies:
     def query(
         self: Proxies,
         queries: list[Query],
+        dataframe: DataFrame | None = None,
     ) -> DataFrame:
         """Find specific proxies using query conditions.
 
@@ -185,7 +186,7 @@ class Proxies:
             DataFrame:
                 The filtered dataframe.
         """
-        dataframe = self.load()
+        dataframe = self.load() if dataframe is None else dataframe
         conditions = [
             operator(data, dataframe.get(key)) for data, key, operator in queries
         ]
