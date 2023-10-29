@@ -95,17 +95,26 @@ class Clone:
         images: ResultSet[Tag] = self.soup.find_all(name="img")
 
         for image in images:
-            if ("src" not in image.attrs and "data-cfsrc" not in image.attrs) or image[
-                "src"
-            ].startswith("https"):
+            with_src = "src" in image.attrs
+            with_data = "data-cfsrc" in image.attrs
+
+            if (
+                not (with_src or with_data)
+                or with_src
+                and image["src"].startswith("https")
+            ):
                 continue
 
-            source = image["src"] if "src" in image.attrs else image["data-cfsrc"]
+            source = image["src"] if with_src else image["data-cfsrc"]
             path = Path(source)
             index = path.suffix.find("?")
             filename = path.name if index < 0 else path.stem + path.suffix[0:index]
             image["src"] = self.path_assets / filename
-            self.assets.append(filename)
+
+            if (self.path / self.path_assets / filename).exists():
+                self.assets.append(filename)
+                continue
+
             response = session.request(url=self.domain + source)
 
             if response is not None:
@@ -113,6 +122,7 @@ class Clone:
                     data=response.content,
                     filename=filename,
                 )
+                self.assets.append(filename)
 
     def sync_links(
         self: Clone,
@@ -125,18 +135,27 @@ class Clone:
             session (Session):
                 The requests session.
         """
-        stylesheets: ResultSet[Tag] = self.soup.find_all(name="link")
+        links: ResultSet[Tag] = self.soup.find_all(name="link")
 
-        for stylesheet in stylesheets:
-            if "href" not in stylesheet.attrs or stylesheet["href"].startswith("https"):
+        for link in links:
+            if "href" not in link.attrs or link["href"].startswith("https"):
                 continue
 
-            source: str = stylesheet["href"]
+            source: str = link["href"]
+
+            if source.startswith("//"):
+                link["href"] = "https:" + source
+                continue
+
             path = Path(source)
             index = path.suffix.find("?")
             filename = path.name if index < 0 else path.stem + path.suffix[0:index]
-            self.assets.append(filename)
-            stylesheet["href"] = self.path_assets / filename
+            link["href"] = self.path_assets / filename
+
+            if (self.path / self.path_assets / filename).exists():
+                self.assets.append(filename)
+                continue
+
             response = session.request(url=self.domain + source)
 
             if response is not None:
@@ -144,6 +163,7 @@ class Clone:
                     data=response.content,
                     filename=filename,
                 )
+                self.assets.append(filename)
 
     def sync_scripts(
         self: Clone,
@@ -174,8 +194,12 @@ class Clone:
             path = Path(source)
             index = path.suffix.find("?")
             filename = path.name if index < 0 else path.stem + path.suffix[0:index]
-            self.assets.append(filename)
             script["src"] = self.path_assets / filename
+
+            if (self.path / self.path_assets / filename).exists():
+                self.assets.append(filename)
+                continue
+
             response = session.request(url=self.domain + source)
 
             if response is not None:
@@ -183,6 +207,7 @@ class Clone:
                     data=response.content,
                     filename=filename,
                 )
+                self.assets.append(filename)
 
     def sync_fonts(
         self: Clone,
@@ -202,21 +227,26 @@ class Clone:
             path_stylesheet = self.path / self.path_assets / stylesheet
             content = path_stylesheet.read_text()
 
-            sources: list[str] = re.findall(r"src: ?url\(([^)]+)\)", string=content)
+            sources: list[str] = re.findall(r"url\(([^)]+)\)", string=content)
 
             for source in sources:
                 url = source.replace('"', "")
-                response = session.request(self.domain + url)
+                path = Path(url)
+                index = path.suffix.find("?")
+                filename = path.name if index < 0 else path.stem + path.suffix[0:index]
+
+                if (self.path / self.path_assets / filename).exists():
+                    self.assets.append(filename)
+                    continue
+
+                response = session.request(url=self.domain + url, delay=2)
 
                 if response is not None:
-                    path = Path(url)
-                    index = path.suffix.find("?")
-                    filename = (
-                        path.name if index < 0 else path.stem + path.suffix[0:index]
-                    )
-                    self.assets.append(filename)
-                    path_stylesheet.write_text(data=content.replace(url, filename))
                     self.save_asset(
                         data=response.content,
                         filename=filename,
                     )
+                    content = content.replace(url, filename)
+                    self.assets.append(filename)
+
+            path_stylesheet.write_text(data=content)
