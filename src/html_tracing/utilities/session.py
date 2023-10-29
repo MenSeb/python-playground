@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import random
+import time
 
 import requests
 from requests import exceptions
@@ -41,6 +42,7 @@ class Session:
     def request(
         self: Session,
         url: str,
+        delay: float = 2,
         timeout: float = 10,
     ) -> requests.Response:
         """Request a URL using a session.
@@ -57,6 +59,8 @@ class Session:
             requests.Response:
                 The HTTP request reponse.
         """
+        time.sleep(delay)
+
         return self.session.get(url=url, timeout=timeout)
 
     def requests(
