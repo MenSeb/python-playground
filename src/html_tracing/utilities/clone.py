@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup, ResultSet, Tag
+from utilities.logger import logger
 
 if TYPE_CHECKING:
     from utilities.session import Session
@@ -46,16 +47,17 @@ class Clone:
         self: Clone,
     ) -> None:
         """Create the directory and folders for the cloned website."""
-        self.path.mkdir(
-            exist_ok=True,
-            parents=True,
-        )
+        logger.trace_()
+
+        self.path.mkdir(exist_ok=True, parents=True)
         (self.path / self.path_assets).mkdir(exist_ok=True)
 
     def save_html(
         self: Clone,
     ) -> int:
         """Save the HTML clone."""
+        logger.trace_()
+
         return (self.path / "index.html").write_text(
             data=self.soup.prettify(),
             encoding="utf-8",
@@ -75,6 +77,8 @@ class Clone:
             filename (str):
                 The asset filename.
         """
+        logger.trace_(msg=filename)
+
         (self.path / self.path_assets / filename).write_bytes(data=data)
 
     def sync_images(
@@ -88,11 +92,18 @@ class Clone:
             session (Session):
                 The requests session.
         """
-        images = self.soup.find_all(name="img")
+        images: ResultSet[Tag] = self.soup.find_all(name="img")
 
         for image in images:
-            source = image["src"]
-            filename = Path(source).name
+            if ("src" not in image.attrs and "data-cfsrc" not in image.attrs) or image[
+                "src"
+            ].startswith("https"):
+                continue
+
+            source = image["src"] if "src" in image.attrs else image["data-cfsrc"]
+            path = Path(source)
+            index = path.suffix.find("?")
+            filename = path.name if index < 0 else path.stem + path.suffix[0:index]
             image["src"] = self.path_assets / filename
             self.assets.append(filename)
             response = session.request(url=self.domain + source)
@@ -114,14 +125,13 @@ class Clone:
             session (Session):
                 The requests session.
         """
-        stylesheets = self.soup.find_all(name="link")
+        stylesheets: ResultSet[Tag] = self.soup.find_all(name="link")
 
         for stylesheet in stylesheets:
-            source: str = stylesheet["href"]
-
-            if source.startswith("https"):
+            if "href" not in stylesheet.attrs or stylesheet["href"].startswith("https"):
                 continue
 
+            source: str = stylesheet["href"]
             path = Path(source)
             index = path.suffix.find("?")
             filename = path.name if index < 0 else path.stem + path.suffix[0:index]
@@ -162,7 +172,8 @@ class Clone:
 
             source: str = script["src"]
             path = Path(source)
-            filename = path.stem + path.suffix[0 : path.suffix.find("?")]
+            index = path.suffix.find("?")
+            filename = path.name if index < 0 else path.stem + path.suffix[0:index]
             self.assets.append(filename)
             script["src"] = self.path_assets / filename
             response = session.request(url=self.domain + source)
@@ -199,7 +210,10 @@ class Clone:
 
                 if response is not None:
                     path = Path(url)
-                    filename = path.stem + path.suffix[0 : path.suffix.find("?")]
+                    index = path.suffix.find("?")
+                    filename = (
+                        path.name if index < 0 else path.stem + path.suffix[0:index]
+                    )
                     self.assets.append(filename)
                     path_stylesheet.write_text(data=content.replace(url, filename))
                     self.save_asset(

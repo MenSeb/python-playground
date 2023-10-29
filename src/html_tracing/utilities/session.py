@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 import random
-from logging import INFO, basicConfig, info, warning
 
 import requests
 from requests import exceptions
-
-basicConfig(level=INFO)
+from utilities.logger import logger
 
 
 class Session:
@@ -89,19 +87,19 @@ class Session:
             agent = random.choice(seq=agents)  # noqa: S311
             self.session.headers.update({"User-Agent": agent})
 
-            info(f"Session with proxy {proxy} and agent {agent}.\n")
+            logger.info_(f"Session with proxy {proxy} and agent {agent}.")
 
             try:
                 response = self.request(url=url, timeout=timeout)
 
                 if response.ok:
-                    info("Session SUCCESS\n")
+                    logger.info_("Session SUCCESS")
                     return response
 
-                warning(f"Session FAILED with status code {response.status_code}.\n")
+                logger.warn_(f"Session FAILED with code {response.status_code}.")
                 continue
             except exceptions.RequestException as error:
-                warning(f"Session FAILED with error {error}.\n")
+                logger.error_(f"Session FAILED with error {error}.")
                 continue
 
         return None

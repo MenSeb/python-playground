@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import functools
 from dataclasses import asdict, dataclass
-from logging import INFO, basicConfig
 from pathlib import Path
 from typing import Any, Callable, NamedTuple
 
@@ -13,8 +12,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup, ResultSet, Tag
 from pandas import DataFrame
-
-basicConfig(level=INFO)
+from utilities.logger import logger
 
 
 @dataclass
@@ -155,6 +153,7 @@ class Proxies:
         self: Proxies,
     ) -> None:
         """Refresh the list of proxies."""
+        logger.trace_()
         self.fetch()
         self.convert()
 
