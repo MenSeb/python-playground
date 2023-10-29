@@ -17,33 +17,37 @@ class Logger:
         tracing: bool = False,
         newline: bool = True,
     ) -> None:
+        formatter = "%(name)s:%(levelname)s => %(msg)s" + "\n" if newline else ""
+        handler = logging.StreamHandler()
+        handler.setFormatter(fmt=logging.Formatter(fmt=formatter))
+        logger = logging.getLogger(name="LOG")
+        logger.addHandler(hdlr=handler)
+        logger.setLevel(level=logging.DEBUG if debugging else logging.INFO)
+
+        self.logger = logger
         self.debugging = debugging
         self.tracing = tracing
-
-        logging.basicConfig(
-            format="%(msg)s" + "\n" if newline else "",
-            level=logging.DEBUG if debugging else logging.INFO,
-        )
+        self.newline = newline
 
     def debug_(self: Logger, msg: str) -> None:
         """Log a message with severity 'DEBUG'."""
-        logging.debug(msg=msg)
+        self.logger.debug(msg=msg)
 
     def warn_(self: Logger, msg: str) -> None:
         """Log a message with severity 'WARN'."""
-        logging.warning(msg=msg)
+        self.logger.warning(msg=msg)
 
     def info_(self: Logger, msg: str) -> None:
         """Log a message with severity 'INFO'."""
-        logging.info(msg=msg)
+        self.logger.info(msg=msg)
 
     def error_(self: Logger, msg: str) -> None:
         """Log a message with severity 'ERROR'."""
-        logging.error(msg=msg)
+        self.logger.error(msg=msg)
 
     def critical_(self: Logger, msg: str) -> None:
         """Log a message with severity 'CRITICAL'."""
-        logging.critical(msg=msg)
+        self.logger.critical(msg=msg)
 
     def trace_(self: Logger, msg: str | None = None) -> None:
         """Log a message with severity 'DEBUG' tracing the called function."""
