@@ -10,8 +10,18 @@ import sys
 class Logger:
     """Interface representing logger utilities."""
 
-    def __init__(self: Logger, *, debug: bool = False) -> None:
-        logging.basicConfig(level=logging.DEBUG if debug else logging.INFO)
+    def __init__(
+        self: Logger,
+        *,
+        debugging: bool = False,
+        tracing: bool = False,
+    ) -> None:
+        self.debugging = debugging
+        self.tracing = tracing
+
+        logging.basicConfig(
+            level=logging.DEBUG if debugging else logging.INFO,
+        )
 
     def debug_(self: Logger, msg: str) -> None:
         """Log a message with severity 'DEBUG'."""
@@ -35,9 +45,22 @@ class Logger:
 
     def trace_(self: Logger, msg: str | None = None) -> None:
         """Log a message with severity 'DEBUG' tracing the called function."""
-        function = sys._getframe(1).f_code.co_name  # noqa: SLF001
+        if not self.tracing:
+            return
 
-        self.debug_(msg=f"CALL function {function}. {msg}")
+        frame = sys._getframe(1)  # noqa: SLF001
+
+        message = "TRACE"
+
+        if "self" in frame.f_locals:
+            message += f" - CLASS {frame.f_locals['self'].__class__.__name__}"
+
+        message += f" - FUNCTION {frame.f_code.co_name}"
+
+        if msg is not None:
+            message += f" - {msg}"
+
+        self.info_(msg=f"{message}\n")
 
 
-logger = Logger()
+logger = Logger(tracing=True)
