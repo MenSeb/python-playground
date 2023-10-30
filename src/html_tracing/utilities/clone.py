@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup, ResultSet, Tag
-from utilities.logger import logger
+from logger import logger
 
 if TYPE_CHECKING:
     from utilities.session import Session
@@ -47,7 +47,7 @@ class Clone:
         self: Clone,
     ) -> None:
         """Create the directory and folders for the cloned website."""
-        logger.trace_()
+        logger.trace_(msg=f"DOMAIN {self.domain}")
 
         self.path.mkdir(exist_ok=True, parents=True)
         (self.path / self.path_assets).mkdir(exist_ok=True)
@@ -77,7 +77,7 @@ class Clone:
             filename (str):
                 The asset filename.
         """
-        logger.trace_(msg=filename)
+        logger.trace_(msg=f"FILE {filename}")
 
         (self.path / self.path_assets / filename).write_bytes(data=data)
 

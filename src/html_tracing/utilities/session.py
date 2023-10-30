@@ -52,6 +52,8 @@ class Session:
             url (str):
                 The URL to request.
             timeout (float, optional):
+                The time (seconds) to wait between requests. Defaults to 2.
+            timeout (float, optional):
                 The time (seconds) to wait before giving up. Defaults to 5.
 
         Returns
