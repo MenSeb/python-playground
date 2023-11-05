@@ -4,13 +4,48 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup, ResultSet, Tag
-from logger import logger
+
+if __name__ == "__main__":
+    from logger import logger
+else:
+    from utilities.logger import logger
 
 if TYPE_CHECKING:
     from utilities.session import Session
+
+
+class ClonePaths(SimpleNamespace):
+    """Interface representing clone directory paths."""
+
+    def __init__(
+        self: ClonePaths,
+        directory: str | Path,
+        folder: str,
+        filename: str,
+    ) -> None:
+        directory = Path(directory)
+        path = directory / folder
+
+        self.directory = directory
+        self.folder = folder
+        self.filename = filename
+        self.fonts = path / "fonts"
+        self.images = path / "images"
+        self.pages = path / "pages"
+        self.scripts = path / "scripts"
+        self.styles = path / "styles"
+
+        if not path.exists():
+            path.mkdir(parents=True)
+            self.fonts.mkdir()
+            self.images.mkdir()
+            self.pages.mkdir()
+            self.scripts.mkdir()
+            self.styles.mkdir()
 
 
 class Clone:
@@ -18,10 +53,10 @@ class Clone:
 
     def __init__(
         self: Clone,
-        domain: str,
+        directory: str | Path,
+        filename: str | Path,
         markup: str | bytes,
-        folder: str = "temp",
-        directory: Path = Path(__file__).parent,
+        url: str,
     ) -> None:
         """Interface representing clone utilities.
 
@@ -36,29 +71,26 @@ class Clone:
             directory (Path, optional):
                 The clone directory. Defaults to Path(__file__).parent.
         """
-        self.assets: list[str] = []
-        self.domain = domain
+        logger.trace_(msg=url)
+
+        domain = url[url.find("//") + 2 : -1]
+
+        self.paths = ClonePaths(
+            directory=directory,
+            filename=filename,
+            folder=domain,
+        )
+        self.url = url
         self.soup = BeautifulSoup(markup=markup, features="html5lib")
-        self.path = directory / folder / domain[domain.index("//") + 2 : -1]
-        self.path_assets = Path("assets")
-        self.setup()
-
-    def setup(
-        self: Clone,
-    ) -> None:
-        """Create the directory and folders for the cloned website."""
-        logger.trace_(msg=f"DOMAIN {self.domain}")
-
-        self.path.mkdir(exist_ok=True, parents=True)
-        (self.path / self.path_assets).mkdir(exist_ok=True)
+        self.source_attributes = ["src", "href", "data-cfsrc"]
 
     def save_html(
         self: Clone,
     ) -> int:
         """Save the HTML clone."""
-        logger.trace_()
+        logger.trace_(msg=self.paths.filename)
 
-        return (self.path / "index.html").write_text(
+        return (self.paths.pages / self.paths.filename).write_text(
             data=self.soup.prettify(),
             encoding="utf-8",
         )
@@ -66,7 +98,7 @@ class Clone:
     def save_asset(
         self: Clone,
         data: bytes,
-        filename: str,
+        path: Path,
     ) -> None:
         """Save an asset file.
 
@@ -74,12 +106,71 @@ class Clone:
         ----
             data (bytes):
                 The asset data.
-            filename (str):
-                The asset filename.
+            path (Path):
+                The asset path.
         """
-        logger.trace_(msg=f"FILE {filename}")
+        logger.trace_(msg=f"ASSET {path}")
 
-        (self.path / self.path_assets / filename).write_bytes(data=data)
+        path.write_bytes(data=data)
+
+    def create_path_asset(
+        self: Clone,
+        source: str,
+        folder: Path,
+    ) -> Path:
+        """Create a path to an asset.
+
+        Args:
+        ----
+            source (str): The asset source.
+            folder (Path): The asset folder.
+
+        Returns
+        -------
+            Path: The asset path.
+        """
+        path = Path(source)
+        index = path.suffix.find("?")
+        filename = path.name if index < 0 else path.stem + path.suffix[0:index]
+        return folder / filename
+
+    def create_path_source(
+        self: Clone,
+        filename: str,
+        folder: Path,
+    ) -> str:
+        """Create a path to a ressource.
+
+        Args:
+        ----
+            filename (str): The ressource filename.
+            folder (Path): The ressource folder.
+
+        Returns
+        -------
+            str: The ressource path.
+        """
+        return Path("..", folder.name, filename).as_posix()
+
+    def find_source_attribute(
+        self: Clone,
+        tag: Tag,
+    ) -> str | None:
+        """Find the HTML element source attribute.
+
+        Args:
+        ----
+            tag (Tag): The HTML element.
+
+        Returns
+        -------
+            str | None: The source attribute.
+        """
+        for source_attribute in self.source_attributes:
+            if source_attribute in tag.attrs:
+                return source_attribute
+
+        return None
 
     def sync_images(
         self: Clone,
@@ -95,34 +186,25 @@ class Clone:
         images: ResultSet[Tag] = self.soup.find_all(name="img")
 
         for image in images:
-            with_src = "src" in image.attrs
-            with_data = "data-cfsrc" in image.attrs
+            attribute = self.find_source_attribute(tag=image)
 
-            if (
-                not (with_src or with_data)
-                or with_src
-                and image["src"].startswith("https")
-            ):
+            if attribute is None or image[attribute].startswith("https"):
                 continue
 
-            source = image["src"] if with_src else image["data-cfsrc"]
-            path = Path(source)
-            index = path.suffix.find("?")
-            filename = path.name if index < 0 else path.stem + path.suffix[0:index]
-            image["src"] = self.path_assets / filename
+            source = image.get(key=attribute)
+            path = self.create_path_asset(source=source, folder=self.paths.images)
+            image["src"] = self.create_path_source(
+                filename=path.name,
+                folder=self.paths.images,
+            )
 
-            if (self.path / self.path_assets / filename).exists():
-                self.assets.append(filename)
+            if path.exists():
                 continue
 
-            response = session.request(url=self.domain + source)
+            response = session.request(url=self.url + source)
 
             if response is not None:
-                self.save_asset(
-                    data=response.content,
-                    filename=filename,
-                )
-                self.assets.append(filename)
+                self.save_asset(data=response.content, path=path)
 
     def sync_links(
         self: Clone,
@@ -138,32 +220,35 @@ class Clone:
         links: ResultSet[Tag] = self.soup.find_all(name="link")
 
         for link in links:
-            if "href" not in link.attrs or link["href"].startswith("https"):
+            attribute = self.find_source_attribute(tag=link)
+
+            if attribute is None or link[attribute].startswith("https"):
                 continue
 
-            source: str = link["href"]
+            source = link.get(key=attribute)
+
+            if source.startswith("https"):
+                continue
 
             if source.startswith("//"):
                 link["href"] = "https:" + source
                 continue
 
-            path = Path(source)
-            index = path.suffix.find("?")
-            filename = path.name if index < 0 else path.stem + path.suffix[0:index]
-            link["href"] = self.path_assets / filename
+            folder = (
+                self.paths.styles
+                if link.get(key="rel")[0] == "stylesheet"
+                else self.paths.images
+            )
+            path = self.create_path_asset(source=source, folder=folder)
+            link["href"] = self.create_path_source(filename=path.name, folder=folder)
 
-            if (self.path / self.path_assets / filename).exists():
-                self.assets.append(filename)
+            if path.exists():
                 continue
 
-            response = session.request(url=self.domain + source)
+            response = session.request(url=self.url + source)
 
             if response is not None:
-                self.save_asset(
-                    data=response.content,
-                    filename=filename,
-                )
-                self.assets.append(filename)
+                self.save_asset(data=response.content, path=path)
 
     def sync_scripts(
         self: Clone,
@@ -186,28 +271,26 @@ class Clone:
 
         scripts: ResultSet[Tag] = self.soup.find_all(name="script")
         for script in scripts:
-            if nosync or "src" not in script.attrs or script["src"].startswith("https"):
+            attribute = self.find_source_attribute(tag=script)
+
+            if nosync or attribute is None or script[attribute].startswith("https"):
                 script.extract()
                 continue
 
-            source: str = script["src"]
-            path = Path(source)
-            index = path.suffix.find("?")
-            filename = path.name if index < 0 else path.stem + path.suffix[0:index]
-            script["src"] = self.path_assets / filename
+            source = script.get(key=attribute)
+            path = self.create_path_asset(source=source, folder=self.paths.scripts)
+            script["src"] = self.create_path_source(
+                filename=path.name,
+                folder=self.paths.scripts,
+            )
 
-            if (self.path / self.path_assets / filename).exists():
-                self.assets.append(filename)
+            if path.exists():
                 continue
 
-            response = session.request(url=self.domain + source)
+            response = session.request(url=self.url + source)
 
             if response is not None:
-                self.save_asset(
-                    data=response.content,
-                    filename=filename,
-                )
-                self.assets.append(filename)
+                self.save_asset(data=response.content, path=path)
 
     def sync_fonts(
         self: Clone,
@@ -219,34 +302,31 @@ class Clone:
             session (Session):
                 The requests session.
         """
-        stylesheets = list(
-            filter(lambda filename: filename.endswith("css"), self.assets),
-        )
+        for path_stylesheet in list(self.paths.styles.iterdir()):
+            stylesheet = path_stylesheet.read_text()
+            urls: list[str] = re.findall(pattern=r"url\(([^)]+)\)", string=stylesheet)
+            fonts = filter(lambda url: url.find("woff") > -1, urls)
 
-        for stylesheet in stylesheets:
-            path_stylesheet = self.path / self.path_assets / stylesheet
-            content = path_stylesheet.read_text()
+            for font in fonts:
+                source = font.replace('"', "")
+                path = self.create_path_asset(source=source, folder=self.paths.fonts)
 
-            sources: list[str] = re.findall(r"url\(([^)]+)\)", string=content)
-
-            for source in sources:
-                url = source.replace('"', "")
-                path = Path(url)
-                index = path.suffix.find("?")
-                filename = path.name if index < 0 else path.stem + path.suffix[0:index]
-
-                if (self.path / self.path_assets / filename).exists():
-                    self.assets.append(filename)
+                if path.exists():
                     continue
 
-                response = session.request(url=self.domain + url, delay=2)
+                response = session.request(url=self.url + source)
 
                 if response is not None:
                     self.save_asset(
                         data=response.content,
-                        filename=filename,
+                        path=path,
                     )
-                    content = content.replace(url, filename)
-                    self.assets.append(filename)
+                    stylesheet = stylesheet.replace(
+                        source,
+                        self.create_path_source(
+                            file=path.name,
+                            folder=self.paths.fonts,
+                        ),
+                    )
 
-            path_stylesheet.write_text(data=content)
+            path_stylesheet.write_text(data=stylesheet)
