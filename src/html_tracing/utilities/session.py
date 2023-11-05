@@ -63,7 +63,7 @@ class Session:
         """
         time.sleep(delay)
 
-        return self.session.get(url=url, timeout=timeout)
+        return self.session.get(url=url, timeout=(timeout, timeout))
 
     def requests(
         self: Session,
