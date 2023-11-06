@@ -8,14 +8,10 @@ from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup, ResultSet, Tag
-
-if __name__ == "__main__":
-    from logger import logger
-else:
-    from utilities.logger import logger
+from utilities import logger
 
 if TYPE_CHECKING:
-    from utilities.session import Session
+    from .session import Session
 
 
 class ClonePaths(SimpleNamespace):

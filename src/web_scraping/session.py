@@ -7,7 +7,7 @@ import time
 
 import requests
 from requests import exceptions
-from utilities.logger import logger
+from utilities import logger
 
 
 class Session:

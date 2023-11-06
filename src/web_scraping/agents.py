@@ -8,7 +8,7 @@ from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup, ResultSet, Tag
-from utilities.logger import logger
+from utilities import logger
 
 
 class UserAgents:

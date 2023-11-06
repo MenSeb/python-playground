@@ -67,6 +67,3 @@ class Logger:
             message += f" - {msg}"
 
         self.info_(msg=f"{message}")
-
-
-logger = Logger(tracing=True)

@@ -12,7 +12,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup, ResultSet, Tag
 from pandas import DataFrame
-from utilities.logger import logger
+from utilities import logger
 
 
 @dataclass
