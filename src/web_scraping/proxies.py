@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import functools
 from dataclasses import asdict, dataclass
-from logging import INFO, basicConfig
 from pathlib import Path
 from typing import Any, Callable, NamedTuple
 
@@ -13,8 +12,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup, ResultSet, Tag
 from pandas import DataFrame
-
-basicConfig(level=INFO)
+from utilities import logger
 
 
 @dataclass
@@ -155,12 +153,14 @@ class Proxies:
         self: Proxies,
     ) -> None:
         """Refresh the list of proxies."""
+        logger.trace_()
         self.fetch()
         self.convert()
 
     def query(
         self: Proxies,
         queries: list[Query],
+        dataframe: DataFrame | None = None,
     ) -> DataFrame:
         """Find specific proxies using query conditions.
 
@@ -185,7 +185,7 @@ class Proxies:
             DataFrame:
                 The filtered dataframe.
         """
-        dataframe = self.load()
+        dataframe = self.load() if dataframe is None else dataframe
         conditions = [
             operator(data, dataframe.get(key)) for data, key, operator in queries
         ]

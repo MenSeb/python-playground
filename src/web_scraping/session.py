@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import random
-from logging import INFO, basicConfig, info, warning
+import time
 
 import requests
 from requests import exceptions
-
-basicConfig(level=INFO)
+from utilities import logger
 
 
 class Session:
@@ -43,17 +42,17 @@ class Session:
     def request(
         self: Session,
         url: str,
-        agent: str | None = None,
+        delay: float = 2,
         timeout: float = 10,
     ) -> requests.Response:
-        """Request a URL using a session proxy.
+        """Request a URL using a session.
 
         Args:
         ----
             url (str):
                 The URL to request.
-            agent (str):
-                The user agent for the headers.
+            timeout (float, optional):
+                The time (seconds) to wait between requests. Defaults to 2.
             timeout (float, optional):
                 The time (seconds) to wait before giving up. Defaults to 5.
 
@@ -62,11 +61,9 @@ class Session:
             requests.Response:
                 The HTTP request reponse.
         """
-        return self.session.get(
-            url=url,
-            timeout=timeout,
-            headers=None if agent is None else {"User-Agent": agent},
-        )
+        time.sleep(delay)
+
+        return self.session.get(url=url, timeout=(timeout, timeout))
 
     def requests(
         self: Session,
@@ -94,20 +91,21 @@ class Session:
         for proxy in proxies:
             self.proxy(proxy=proxy)
             agent = random.choice(seq=agents)  # noqa: S311
+            self.session.headers.update({"User-Agent": agent})
 
-            info(f"Session with proxy {proxy} and agent {agent}.\n")
+            logger.info_(f"Session with proxy {proxy} and agent {agent}.")
 
             try:
                 response = self.request(url=url, timeout=timeout)
 
                 if response.ok:
-                    info("Session SUCCESS\n")
+                    logger.info_("Session SUCCESS")
                     return response
 
-                warning(f"Session FAILED with status code {response.status_code}.\n")
+                logger.warn_(f"Session FAILED with code {response.status_code}.")
                 continue
             except exceptions.RequestException as error:
-                warning(f"Session FAILED with error {error}.\n")
+                logger.error_(f"Session FAILED with error {error}.")
                 continue
 
         return None

@@ -4,13 +4,11 @@ from __future__ import annotations
 
 import json
 import random
-from logging import INFO, basicConfig, info
 from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup, ResultSet, Tag
-
-basicConfig(level=INFO)
+from utilities import logger
 
 
 class UserAgents:
@@ -58,7 +56,6 @@ class UserAgents:
 
         for endpoint in self.endpoints:
             response = requests.get(url=f"{self.url}{endpoint}", timeout=10)
-            info(response.ok, response.status_code)
             soup = BeautifulSoup(markup=response.content, features="html.parser")
             data += str(soup.find("table"))
 
@@ -81,6 +78,7 @@ class UserAgents:
         self: UserAgents,
     ) -> None:
         """Refresh the list of user agents."""
+        logger.trace_()
         self.fetch()
         self.convert()
 
