@@ -1,4 +1,4 @@
-"""Module Benchmark."""
+"""Module Benchmark Selenium."""
 
 from __future__ import annotations
 

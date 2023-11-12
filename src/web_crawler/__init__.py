@@ -1,1 +1,1 @@
-"""Package Web Driver."""
+"""Package Web Crawler."""

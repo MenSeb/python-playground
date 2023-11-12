@@ -1,4 +1,4 @@
-"""Module Benchmark."""
+"""Module Benchmark Playwright."""
 
 from __future__ import annotations
 

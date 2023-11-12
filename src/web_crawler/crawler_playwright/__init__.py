@@ -1,1 +1,1 @@
-"""Package Playwright."""
+"""Package Crawler Playwright."""
