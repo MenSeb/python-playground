@@ -132,3 +132,8 @@ pytest-cov = "^4.1.0"
 [tool.poetry.group.docs.dependencies]
 mkdocs = { extras = ["i18n"], version = "^1.5.2" }
 mkdocstrings = { extras = ["python"], version = "^0.22.0" }
+
+[tool.poetry.group.webdriver.dependencies]
+selenium = "^4.15.2"
+playwright = "^1.39.0"
+webdriver-manager = "^4.0.1"
