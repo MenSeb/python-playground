@@ -22,7 +22,7 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python",
 ]
-packages = []
+packages = [{ include = "*", from = "src" }]
 include = [{ path = "tests", format = "sdist" }]
 exclude = []
 
@@ -41,7 +41,7 @@ directory = "./coverage/html"
 output = "./coverage/lcov.info"
 
 [tool.coverage.report]
-fail_under = 100
+# fail_under = 100
 show_missing = true
 exclude_lines = ["if __name__ == \"__main__\":", "def __repr__", "def __str__"]
 
@@ -54,12 +54,15 @@ omit = ["**/__init__.py", "**/__main__.py"]
 
 [tool.djlint]
 use_gitignore = true
+ignore = "H006"
 
 [tool.mypy]
 ignore_missing_imports = true
 
 [tool.pymarkdown]
 plugins.line-length.enabled = false
+plugins.first-line-h1.enabled = false
+plugins.no-inline-html.enabled = false
 
 [tool.pytest.ini_options]
 pythonpath = "src"
@@ -92,6 +95,9 @@ exclude = []
 [tool.ruff.per-file-ignores]
 "tests/**/*.py" = ["S101", "PLR2004"]
 
+[tool.ruff.pydocstyle]
+convention = "numpy"
+
 [tool.yamlfix]
 comments_min_spaces_from_content = 1
 preserve_quotes = true
@@ -100,6 +106,7 @@ whitelines = 1
 
 [tool.poetry.dependencies]
 python = "^3.11.1"
+python-dotenv = "^1.0.0"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -1,11 +1,7 @@
 # environments
 .env
 .venv/
-env/
 venv/
-ENV/
-env.bak/
-venv.bak/
 
 # mkdocs
 site/
@@ -36,6 +32,3 @@ __pycache__/
 
 # tests
 coverage/
-
-# vscode
-.vscode/
