@@ -8,9 +8,7 @@ copyright: MIT License - Copyright (c) 2023 Sébastien Menard
 
 nav:
   - Home: index.md
-  - Temp: temp.md
-  - Temp: temp.md
-  - Temp: temp.md
+  - Utilities: utilities.md
 
 plugins:
   - mkdocstrings # generate from docstrings
