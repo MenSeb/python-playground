@@ -17,9 +17,22 @@ class Logger:
         tracing: bool = False,
         newline: bool = True,
     ) -> None:
+        """Initiate a logger.
+
+        Parameters
+        ----------
+        debugging : bool, optional
+            Set logging level to DEBUG otherwise INFO, by default False
+        tracing : bool, optional
+            Trace method calls when using _trace, by default False
+        newline : bool, optional
+            Add a new line between logs, by default True
+        """
         formatter = "%(name)s:%(levelname)s => %(msg)s" + "\n" if newline else ""
+
         handler = logging.StreamHandler()
         handler.setFormatter(fmt=logging.Formatter(fmt=formatter))
+
         logger = logging.getLogger(name="LOG")
         logger.addHandler(hdlr=handler)
         logger.setLevel(level=logging.DEBUG if debugging else logging.INFO)
@@ -30,27 +43,63 @@ class Logger:
         self.newline = newline
 
     def debug_(self: Logger, msg: str) -> None:
-        """Log a message with severity 'DEBUG'."""
+        """Log a message with severity DEBUG.
+
+        Parameters
+        ----------
+        msg : str
+            The message to display.
+        """
         self.logger.debug(msg=msg)
 
     def warn_(self: Logger, msg: str) -> None:
-        """Log a message with severity 'WARN'."""
+        """Log a message with severity WARN.
+
+        Parameters
+        ----------
+        msg : str
+            The message to display.
+        """
         self.logger.warning(msg=msg)
 
     def info_(self: Logger, msg: str) -> None:
-        """Log a message with severity 'INFO'."""
+        """Log a message with severity INFO.
+
+        Parameters
+        ----------
+        msg : str
+            The message to display.
+        """
         self.logger.info(msg=msg)
 
     def error_(self: Logger, msg: str) -> None:
-        """Log a message with severity 'ERROR'."""
+        """Log a message with severity ERROR.
+
+        Parameters
+        ----------
+        msg : str
+            The message to display.
+        """
         self.logger.error(msg=msg)
 
     def critical_(self: Logger, msg: str) -> None:
-        """Log a message with severity 'CRITICAL'."""
+        """Log a message with severity CRITICAL.
+
+        Parameters
+        ----------
+        msg : str
+            The message to display.
+        """
         self.logger.critical(msg=msg)
 
     def trace_(self: Logger, msg: str | None = None) -> None:
-        """Log a message with severity 'DEBUG' tracing the called function."""
+        """Log a message with severity 'DEBUG' to trace methods call.
+
+        Parameters
+        ----------
+        msg : str | None, optional
+            The message to display, by default None.
+        """
         if not self.tracing:
             return
 
@@ -58,10 +107,12 @@ class Logger:
 
         message = "TRACE"
 
+        # Trace class name if method is from a class
         if "self" in frame.f_locals:
             message += f" - CLASS {frame.f_locals['self'].__class__.__name__}"
 
-        message += f" - FUNCTION {frame.f_code.co_name}"
+        # Trace method name
+        message += f" - METHOD {frame.f_code.co_name}"
 
         if msg is not None:
             message += f" - {msg}"

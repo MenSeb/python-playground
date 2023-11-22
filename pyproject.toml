@@ -54,12 +54,15 @@ omit = ["**/__init__.py", "**/__main__.py"]
 
 [tool.djlint]
 use_gitignore = true
+ignore = "H006"
 
 [tool.mypy]
 ignore_missing_imports = true
 
 [tool.pymarkdown]
 plugins.line-length.enabled = false
+plugins.first-line-h1.enabled = false
+plugins.no-inline-html.enabled = false
 
 [tool.pytest.ini_options]
 pythonpath = "src"
@@ -100,7 +103,6 @@ comments_min_spaces_from_content = 1
 preserve_quotes = true
 whitelines = 1
 
-
 [tool.poetry.dependencies]
 python = ">=3.12.0,<3.13"
 python-dotenv = "^1.0.0"
@@ -118,7 +120,6 @@ commitizen = "^3.7.0"
 mypy = "^1.5.1"
 yamlfix = "^1.14.0"
 
-
 [tool.poetry.group.lint.dependencies]
 ruff = "^0.0.286"
 black = "^23.7.0"
@@ -126,13 +127,16 @@ pymarkdownlnt = "^0.9.13.3"
 yamllint = "^1.32.0"
 djlint = "^1.32.1"
 
-
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.0"
 pytest-mock = "^3.11.1"
 pytest-cov = "^4.1.0"
 
-
 [tool.poetry.group.docs.dependencies]
 mkdocs = { extras = ["i18n"], version = "^1.5.2" }
 mkdocstrings = { extras = ["python"], version = "^0.22.0" }
+
+[tool.poetry.group.webdriver.dependencies]
+selenium = "^4.15.2"
+playwright = "^1.39.0"
+webdriver-manager = "^4.0.1"
