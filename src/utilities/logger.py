@@ -12,7 +12,8 @@ class Logger:
 
     def __init__(
         self: Logger,
-        *,
+        name: str = "LOG",
+        formatter: str = "%(name)s:%(levelname)s => %(msg)s",
         debugging: bool = False,
         tracing: bool = False,
         newline: bool = True,
@@ -21,6 +22,10 @@ class Logger:
 
         Parameters
         ----------
+        name : str, optional
+            The name of the the logger, by default "LOG"
+        formatter: str, optional
+            The logger format, by default "%(name)s:%(levelname)s => %(msg)s"
         debugging : bool, optional
             Set logging level to DEBUG otherwise INFO, by default False
         tracing : bool, optional
@@ -28,12 +33,13 @@ class Logger:
         newline : bool, optional
             Add a new line between logs, by default True
         """
-        formatter = "%(name)s:%(levelname)s => %(msg)s" + "\n" if newline else ""
+        if newline:
+            formatter += "\n"
 
         handler = logging.StreamHandler()
         handler.setFormatter(fmt=logging.Formatter(fmt=formatter))
 
-        logger = logging.getLogger(name="LOG")
+        logger = logging.getLogger(name=name)
         logger.addHandler(hdlr=handler)
         logger.setLevel(level=logging.DEBUG if debugging else logging.INFO)
 
