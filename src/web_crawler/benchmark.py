@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import functools
 import time
-from logging import INFO, basicConfig, info
 from typing import Callable
 
 from crawler_playwright.benchmark import (
@@ -17,8 +16,7 @@ from crawler_selenium.benchmark import (
     selenium_extract_table,
     use_selenium,
 )
-
-basicConfig(level=INFO)
+from utilities import logger
 
 
 def run_benchmark(
@@ -46,7 +44,7 @@ def run_benchmark(
         else callback.__name__
     )
 
-    info(f"Start Benchmark ({series}) - {name}")
+    logger.info_(f"Start Benchmark ({series}) - {name}")
 
     for index in range(series):
         start = time.time()
@@ -55,13 +53,13 @@ def run_benchmark(
         total = end - start
         times.append(total)
 
-        info(f"Benchmark {index + 1} - Time {total:.2f}s")
+        logger.info_(f"Benchmark {index + 1} - Time {total:.2f}s")
 
-    info("Stop Benchmark")
+    logger.info_("Stop Benchmark")
 
     average = sum(times) / series
 
-    info(f"Benchmark average {average:.2f}s\n")
+    logger.info_(f"Benchmark average {average:.2f}s\n")
 
     return average
 
@@ -87,9 +85,9 @@ def run_benchmarks(
     time_diff = abs(time_selenium - time_playwright)
     crawler = "Playwright" if time_playwright < time_selenium else "Selenium"
 
-    info(f"On average, Playwright took {time_playwright:.2f}s.")
-    info(f"On average, Selenium took {time_selenium:.2f}s.")
-    info(f"Fastest was {crawler} by {time_diff:.2f}s.")
+    logger.info_(f"On average, Playwright took {time_playwright:.2f}s.")
+    logger.info_(f"On average, Selenium took {time_selenium:.2f}s.")
+    logger.info_(f"Fastest was {crawler} by {time_diff:.2f}s.")
 
 
 def benchmarks_extract_lots(
