@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import contextlib
-from logging import INFO, basicConfig
 from os import environ
 
 from dotenv import find_dotenv, load_dotenv
-from flask import Flask, render_template
+from flask import Flask, jsonify, render_template
+from utils import fetch_urls
 
-basicConfig(level=INFO)
 load_dotenv(find_dotenv())
 
 app = Flask(
@@ -23,6 +22,12 @@ app = Flask(
 def route_home() -> str:
     """Render route home."""
     return render_template("index.html")
+
+
+@app.route("/api/tracing/<url>")
+def api_tracing(url: str) -> str:
+    """Trace a URL."""
+    return jsonify(urls=fetch_urls(url=url))
 
 
 if __name__ == "__main__":
