@@ -80,7 +80,7 @@ addopts = [
 select = ["ALL"]
 
 # A list of rule codes or prefixes to ignore.
-ignore = ["D203", "D213"]
+ignore = ["D203", "D213", "FBT001", "FBT002", "PLR0913"]
 
 # A list of rule codes or prefixes to consider autofixable
 fixable = ["ALL"]
