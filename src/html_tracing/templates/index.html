@@ -6,30 +6,28 @@
         <meta name="description" content="Playground for Python language." />
         <meta name="keywords" content="python, playground" />
         <title>Python Playground</title>
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="{{ url_for('static', filename='styles/index.css') }}"
-        />
-        <script
-            defer
-            type="module"
-            src="{{ url_for('static', filename='scripts/index.js') }}"
-        ></script>
+        <link rel="stylesheet"
+              type="text/css"
+              href="{{ url_for('static', filename='styles/index.css') }}" />
+        <script defer
+                type="module"
+                src="{{ url_for('static', filename='scripts/index.js') }}"></script>
     </head>
     <body>
-        <header>Python Playground</header>
+        <header>
+            Python Playground
+        </header>
         <main>
             <form id="form-spider">
-                <input
-                    type="text"
-                    name="url"
-                    placeholder="Type a URL"
-                    value="https://www.webscraper.io/test-sites"
-                />
+                <input type="text"
+                       name="url"
+                       placeholder="Type a URL"
+                       value="https://www.webscraper.io/test-sites" />
                 <button type="submit">Fetch</button>
             </form>
         </main>
-        <footer>Made with love by MenSeb</footer>
+        <footer>
+            Made with love by MenSeb
+        </footer>
     </body>
 </html>
