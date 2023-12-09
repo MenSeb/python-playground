@@ -114,11 +114,7 @@ class Session:
             logger.info_(f"Session with proxy {proxy} and agent {agent}.")
 
             try:
-                response = self.request(
-                    url=url,
-                    timeout=self.timeout,
-                    validate=self.validate,
-                )
+                response = self.request(url=url)
 
                 if response.ok:
                     logger.info_("Session SUCCESS")

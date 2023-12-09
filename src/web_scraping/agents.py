@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import json
 import random
+from datetime import datetime
 from pathlib import Path
+from typing import Any
 
+import pytz
 import requests
 from bs4 import BeautifulSoup, ResultSet, Tag
 from utilities import logger
@@ -28,6 +31,7 @@ class UserAgents:
         filename: str = "user-agents",
         folder: str = "datas",
         directory: Path = Path(__file__).parent,
+        refresh_time: float = 60 * 60 * 24,
     ) -> None:
         """Interface representing user agents utilities.
 
@@ -43,10 +47,13 @@ class UserAgents:
                 Defaults to Path(__file__).parent.
         """
         path = directory / folder
+        self.path = path
+        self.path_time = path / f"{filename}-time.json"
         self.path_html = path / f"{filename}.html"
         self.path_json = path / f"{filename}.json"
         self.endpoints = ["windows", "macos", "ios", "chrome-os", "android"]
         self.url = "https://www.whatismybrowser.com/guides/the-latest-user-agent/"
+        self.refresh_time = refresh_time
 
     def fetch(
         self: UserAgents,
@@ -64,27 +71,45 @@ class UserAgents:
 
     def convert(
         self: UserAgents,
-    ) -> None:
+    ) -> list[str | None]:
         """Convert the user agents HTML tables to JSON format."""
         soup = BeautifulSoup(markup=self.path_html.read_text(), features="html.parser")
         tables: ResultSet[Tag] = soup.find_all("table")
         bodies: list[Tag] = [table.find("tbody") for table in tables]
         rows: list[Tag] = [row for body in bodies for row in body.find_all("tr")]
         lists = [row.select("td:last-child ul li span") for row in rows]
-        data = [span.string for spans in lists for span in spans]
-        self.save(data=data)
+        return [span.string for spans in lists for span in spans]
 
     def refresh(
         self: UserAgents,
+        refresh_time: float | None = None,
     ) -> None:
         """Refresh the list of user agents."""
-        logger.trace_()
+        datetime_info = pytz.timezone(zone=("America/Montreal"))
+        datetime_next = datetime.now(tz=datetime_info)
+
+        if self.path_time.exists():
+            datetime_data = json.loads(s=self.path_time.read_text())
+            datetime_prev = datetime.strptime(
+                datetime_data,
+                "%d/%m/%Y, %H:%M:%S",
+            ).astimezone(tz=datetime_info)
+            datetime_diff = datetime_next - datetime_prev
+            datetime_secs = datetime_diff.total_seconds()
+
+            if datetime_secs < (refresh_time or self.refresh_time):
+                return
+
+        logger.trace_(msg="Refresh User Agents!")
+
         self.fetch()
-        self.convert()
+        data = self.convert()
+        self.save(data=data, datetime=datetime_next)
 
     def save(
         self: UserAgents,
         data: list[str],
+        datetime: datetime,
         path: Path | None = None,
     ) -> None:
         """Save the user agents list.
@@ -97,10 +122,13 @@ class UserAgents:
                 The save path. Defaults to None.
         """
         (path or self.path_json).write_text(json.dumps(obj=data))
+        self.path_time.write_text(
+            json.dumps(obj=datetime.strftime(format="%d/%m/%Y, %H:%M:%S")),
+        )
 
     def load(
         self: UserAgents,
-    ) -> list[str]:
+    ) -> dict[str, Any]:
         """Load the user agents list.
 
         Returns

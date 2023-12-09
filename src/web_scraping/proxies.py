@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import functools
+import json
 from dataclasses import asdict, dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, NamedTuple
 
 import numpy as np
 import pandas as pd
+import pytz
 import requests
 from bs4 import BeautifulSoup, ResultSet, Tag
 from pandas import DataFrame
@@ -107,6 +110,7 @@ class Proxies:
         filename: str = "proxies",
         folder: str = "datas",
         directory: Path = Path(__file__).parent,
+        refresh_time: float = 60 * 60 * 24,
     ) -> None:
         """Interface representating proxy utilities.
 
@@ -122,6 +126,8 @@ class Proxies:
                 Defaults to Path(__file__).parent.
         """
         path = directory / folder
+        self.path = path
+        self.path_time = path / f"{filename}-time.json"
         self.path_html = path / f"{filename}.html"
         self.path_csv = path / f"{filename}.csv"
         self.url = "https://free-proxy-list.net/"
@@ -129,6 +135,7 @@ class Proxies:
         self.operators = Operators()
         self.session = requests.Session()
         self.keys = list(asdict(self.headers).keys())
+        self.refresh_time = refresh_time
 
     def fetch(
         self: Proxies,
@@ -141,21 +148,39 @@ class Proxies:
 
     def convert(
         self: Proxies,
-    ) -> None:
+    ) -> list[str]:
         """Convert the proxy HTML table to CSV format."""
         table = BeautifulSoup(markup=self.path_html.read_text(), features="html.parser")
         rows: ResultSet[Tag] = table.find("tbody").find_all("tr")
         rows_cells: list[ResultSet[Tag]] = [row.find_all("td") for row in rows]
-        datas: list[str] = [(cell.string for cell in cells) for cells in rows_cells]
-        self.save(datas=datas)
+        data: list[str] = [(cell.string for cell in cells) for cells in rows_cells]
+        return data
 
     def refresh(
         self: Proxies,
+        refresh_time: float | None = None,
     ) -> None:
         """Refresh the list of proxies."""
-        logger.trace_()
+        datetime_info = pytz.timezone(zone=("America/Montreal"))
+        datetime_next = datetime.now(tz=datetime_info)
+
+        if self.path_time.exists():
+            datetime_data = json.loads(s=self.path_time.read_text())
+            datetime_prev = datetime.strptime(
+                datetime_data,
+                "%d/%m/%Y, %H:%M:%S",
+            ).astimezone(tz=datetime_info)
+            datetime_diff = datetime_next - datetime_prev
+            datetime_secs = datetime_diff.total_seconds()
+
+            if datetime_secs < (refresh_time or self.refresh_time):
+                return
+
+        logger.trace_(msg="Refresh Proxies!")
+
         self.fetch()
-        self.convert()
+        data = self.convert()
+        self.save(data=data, datetime=datetime_next)
 
     def query(
         self: Proxies,
@@ -236,17 +261,21 @@ class Proxies:
 
     def save(
         self: Proxies,
-        datas: list[str],
+        data: list[str],
+        datetime: datetime,
         path: Path | None = None,
     ) -> None:
         """Save the proxy list as a dataframe.
 
         Args:
         ----
-            datas (list[str]):
+            data (list[str]):
                 The proxy list.
             path (Path | None, optional):
                 The save path. Defaults to None.
         """
-        dataframe = DataFrame(data=datas, columns=self.keys)
+        dataframe = DataFrame(data=data, columns=self.keys)
         dataframe.to_csv(path_or_buf=path or self.path_csv, index=False)
+        self.path_time.write_text(
+            json.dumps(obj=datetime.strftime(format="%d/%m/%Y, %H:%M:%S")),
+        )
