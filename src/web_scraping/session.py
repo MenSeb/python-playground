@@ -182,6 +182,6 @@ class Session:
         """
         async with aiohttp.ClientSession() as session:
             results: list[str | None] = await asyncio.gather(
-                *[self.judge_proxy(proxy=proxy, session=session) for proxy in proxies],
+                *[self.check_proxy(proxy=proxy, session=session) for proxy in proxies],
             )
             return list(filter(lambda result: result is not None, results))
