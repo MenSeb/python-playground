@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
+import asyncio
 import random
 import time
 
+import aiohttp
 import requests
+import urllib3
 from requests import exceptions
 from utilities import logger
+
+urllib3.disable_warnings()
 
 
 class Session:
@@ -81,7 +86,7 @@ class Session:
         return (
             self.session.head(url=url, timeout=timeout)
             if self.validate
-            else self.session.get(url=url, timeout=timeout)
+            else self.session.get(url=url, timeout=timeout, verify=False)
         )
 
     def requests(
@@ -106,6 +111,8 @@ class Session:
             requests.Response | None:
                 The HTTP request reponse.
         """
+        self.session.trust_env = False
+
         for proxy in proxies:
             self.proxy(proxy=proxy)
             agent = random.choice(seq=agents)  # noqa: S311
@@ -127,3 +134,54 @@ class Session:
                 continue
 
         return None
+
+    async def check_proxy(
+        self: Session,
+        session: aiohttp.ClientSession,
+        proxy: str,
+    ) -> str | None:
+        """Check if a proxy server is available.
+
+        Parameters
+        ----------
+        session : aiohttp.ClientSession
+            The request client session.
+        proxy : str
+            The proxy server.
+
+        Returns
+        -------
+        str | None
+            The proxy server if available.
+        """
+        status = 200
+
+        try:
+            response = await session.head(timeout=10, url=proxy)
+        except Exception:  # noqa: BLE001
+            return None
+        else:
+            valid = response.ok and response.status == status
+            return proxy if valid else None
+
+    async def check_proxies(
+        self: Session,
+        proxies: list[str],
+    ) -> list[str]:
+        """Check a list of proxies for their availibilty.
+
+        Parameters
+        ----------
+        proxies : list[str]
+            The list of proxies.
+
+        Returns
+        -------
+        list[str]
+            The list of proxies available.
+        """
+        async with aiohttp.ClientSession() as session:
+            results: list[str | None] = await asyncio.gather(
+                *[self.judge_proxy(proxy=proxy, session=session) for proxy in proxies],
+            )
+            return list(filter(lambda result: result is not None, results))

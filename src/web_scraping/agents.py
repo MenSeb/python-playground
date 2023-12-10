@@ -83,8 +83,19 @@ class UserAgents:
     def refresh(
         self: UserAgents,
         refresh_time: float | None = None,
-    ) -> None:
-        """Refresh the list of user agents."""
+    ) -> bool:
+        """Refresh the list of user agents.
+
+        Parameters
+        ----------
+        refresh_time : float | None, optional
+            The time (seconds) needed for a refresh, by default None
+
+        Returns
+        -------
+        bool
+            True if a refresh was done.
+        """
         datetime_info = pytz.timezone(zone=("America/Montreal"))
         datetime_next = datetime.now(tz=datetime_info)
 
@@ -98,13 +109,15 @@ class UserAgents:
             datetime_secs = datetime_diff.total_seconds()
 
             if datetime_secs < (refresh_time or self.refresh_time):
-                return
+                return False
 
         logger.trace_(msg="Refresh User Agents!")
 
         self.fetch()
         data = self.convert()
         self.save(data=data, datetime=datetime_next)
+
+        return True
 
     def save(
         self: UserAgents,

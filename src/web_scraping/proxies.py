@@ -128,6 +128,7 @@ class Proxies:
         path = directory / folder
         self.path = path
         self.path_time = path / f"{filename}-time.json"
+        self.path_active = path / f"{filename}-active.json"
         self.path_html = path / f"{filename}.html"
         self.path_csv = path / f"{filename}.csv"
         self.url = "https://free-proxy-list.net/"
@@ -160,7 +161,20 @@ class Proxies:
         self: Proxies,
         refresh_time: float | None = None,
     ) -> None:
-        """Refresh the list of proxies."""
+        """Refresh the list of proxies.
+
+        Parameters
+        ----------
+        refresh_time : float | None, optional
+            The time (seconds) needed for a refresh, by default None
+
+        Returns
+        -------
+        bool
+            True if a refresh was done.
+        """
+        logger.trace_()
+
         datetime_info = pytz.timezone(zone=("America/Montreal"))
         datetime_next = datetime.now(tz=datetime_info)
 
@@ -174,18 +188,21 @@ class Proxies:
             datetime_secs = datetime_diff.total_seconds()
 
             if datetime_secs < (refresh_time or self.refresh_time):
-                return
+                return False
 
-        logger.trace_(msg="Refresh Proxies!")
+        logger.info_(msg="Refresh Proxies!")
 
         self.fetch()
         data = self.convert()
         self.save(data=data, datetime=datetime_next)
 
+        return True
+
     def query(
         self: Proxies,
         queries: list[Query],
         dataframe: DataFrame | None = None,
+        logical_operator: str = "and",
     ) -> DataFrame:
         """Find specific proxies using query conditions.
 
@@ -214,15 +231,19 @@ class Proxies:
         conditions = [
             operator(data, dataframe.get(key)) for data, key, operator in queries
         ]
-        reducer = functools.reduce(np.logical_and, conditions)
+        logic_operator = np.logical_and if logical_operator == "and" else np.logical_or
+        reducer = functools.reduce(logic_operator, conditions)
         return dataframe[reducer]
 
     def extract(
         self: Proxies,
         limit: int | None = None,
         dataframe: DataFrame | None = None,
+        protocol: bool = True,
     ) -> list[str]:
-        """Extract a list of proxies in the format {host}:{port}.
+        """Extract a list of proxies.
+
+        Default format: {protocol}://{host}:{port}
 
         Args:
         ----
@@ -238,8 +259,29 @@ class Proxies:
         """
         datas = (
             self.load(limit=limit) if dataframe is None else dataframe.head(n=limit)
-        )[[self.headers.host, self.headers.port]]
-        return [f"{host}:{port}" for _, (host, port) in datas.iterrows()]
+        )[[self.headers.host, self.headers.port, self.headers.https]]
+
+        return [
+            f"{'https' if https == 'yes' else 'http'}://{host}:{port}"
+            if protocol
+            else f"{host}:{port}"
+            for _, (host, port, https) in datas.iterrows()
+        ]
+
+    def extract_https(self: Proxies) -> list[str]:
+        """Extract a list of HTTPS proxies."""
+        return self.extract(
+            dataframe=self.query(
+                queries=[
+                    Query(
+                        data="yes",
+                        key=self.headers.https,
+                        operator=self.operators.eq,
+                    ),
+                ],
+                dataframe=self.load(),
+            ),
+        )
 
     def load(
         self: Proxies,
@@ -279,3 +321,20 @@ class Proxies:
         self.path_time.write_text(
             json.dumps(obj=datetime.strftime(format="%d/%m/%Y, %H:%M:%S")),
         )
+
+    def save_active(
+        self: Proxies,
+        proxies: list[str],
+    ) -> None:
+        """Save the active proxy list.
+
+        Args:
+        ----
+            proxies (list[str]):
+                The proxy list.
+        """
+        self.path_active.write_text(json.dumps(obj=proxies))
+
+    def load_active(self: Proxies) -> list[str]:
+        """Load the active proxy list."""
+        return json.loads(s=self.path_active.read_text())
