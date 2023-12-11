@@ -2,89 +2,58 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
+import requests
 from bs4 import BeautifulSoup, ResultSet, Tag
-
-if TYPE_CHECKING:
-    from web_scraping.session import Session
 
 
 def extract_domain(url: str) -> str:
-    """Extract the domain from a URL.
+    """Extract the domain from a website URL.
 
     Parameters
     ----------
     url : str
-        The url to extract from.
+        The website URL.
 
     Returns
     -------
     str
-        The URL domain.
+        The website domain.
     """
     return url[0 : url.index("/", url.index("/") + 2)]
 
 
-def validate_href(
-    href: str,
-    domain: str,
-) -> bool:
-    """Validate the link "href" attribute.
-
-    Parameters
-    ----------
-    href : str
-        The link href attribute.
-    domain : str
-        The link domain.
-
-    Returns
-    -------
-    bool
-        True if from HTTPS and not from within its own domain.
-    """
-    return href.startswith("https") and not href.startswith(domain)
-
-
-def fetch_links(
+def extract_hrefs(
     url: str,
-    agents: list[str],
-    proxies: list[str],
-    session: Session,
+    timeout: float = 5,
 ) -> list[str] | None:
-    """Fetch a URL and extract its links "href" attributes.
+    """Extract all href attributes from links found in a website's URL.
 
     Parameters
     ----------
     url : str
-        The URL to fetch.
-    agents : list[str]
-        The agents to use.
-    proxies : list[str]
-        The proxies to use.
-    session : Session
-        The requests session.
+        The website URL.
+    timeout : float, optional
+        The time (seconds) to wait before giving up, by default 5
 
     Returns
     -------
     list[str] | None
-        The list of links "href".
+        The list of href attributes.
     """
-    response = session.requests(
-        agents=agents,
-        proxies=proxies,
-        url=url,
-    )
+    response = requests.get(url=url, timeout=(timeout, timeout))
 
-    if response is None or not response.ok:
+    if not response.ok:
         return None
 
     soup = BeautifulSoup(markup=response.content, features="html5lib")
     links: ResultSet[Tag] = soup.find_all(name="a", attrs={"href": True})
-    domain = extract_domain(url)
     hrefs: list[str] = [link.get(key="href") for link in links]
-    valid_hrefs = filter(lambda href: validate_href(href=href, domain=domain), hrefs)
-    unique_hrefs = set(valid_hrefs)
 
-    return list(unique_hrefs)
+    domain = extract_domain(url=url)
+
+    result = set()
+    for href in hrefs:
+        if href.startswith("https") and not href.startswith(domain):
+            result.add(href)
+
+    return list(result)
