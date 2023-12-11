@@ -7,19 +7,19 @@ repo_url: https://github.com/MenSeb/python-playground
 copyright: MIT License - Copyright (c) 2023 Sébastien Menard
 
 nav:
-  - Home: index.md
-  - Utilities: utilities.md
+    - Home: index.md
+    - Utilities: utilities.md
 
 plugins:
-  - mkdocstrings # generate from docstrings
-  - search # search functionality
+    - mkdocstrings # generate from docstrings
+    - search # search functionality
 
 theme:
-  locale: en
-  # name: mkdocs
-  name: readthedocs
-  # logo: assets/images/logo.svg
-  # favicon: assets/images/favicon.ico
+    locale: en
+    # name: mkdocs
+    name: readthedocs
+    # logo: assets/images/logo.svg
+    # favicon: assets/images/favicon.ico
 # extra_css:
 #   - assets/stylesheets/styles.css
 

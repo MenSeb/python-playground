@@ -102,6 +102,9 @@ convention = "numpy"
 comments_min_spaces_from_content = 1
 preserve_quotes = true
 whitelines = 1
+indent_mapping = 4
+indent_offset = 4
+indent_sequence = 6
 
 [tool.poetry.dependencies]
 python = ">=3.12.0,<3.13"
