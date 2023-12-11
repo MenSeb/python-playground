@@ -3,69 +3,69 @@ name: CI
 # description: Continuous Integration.
 
 on:
-  push:
-    branches: [main]
-  pull_request:
+    push:
+        branches: [main]
+    pull_request:
 
 jobs:
-  filter:
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: read
-    outputs:
-      changes: ${{ steps.filter.outputs.changes }}
-      html: ${{ steps.filter.outputs.html }}
-      markdown: ${{ steps.filter.outputs.markdown }}
-      python: ${{ steps.filter.outputs.python }}
-      yaml: ${{ steps.filter.outputs.yaml }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-      - name: Filter Changes
-        uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: |
-            html:
-              - "**.html"
-            markdown:
-              - "**.md"
-            python:
-              - "**.py"
-            yaml:
-              - "**.yaml"
-              - "**.yml"
+    filter:
+        runs-on: ubuntu-latest
+        permissions:
+            pull-requests: read
+        outputs:
+            changes: ${{ steps.filter.outputs.changes }}
+            html: ${{ steps.filter.outputs.html }}
+            markdown: ${{ steps.filter.outputs.markdown }}
+            python: ${{ steps.filter.outputs.python }}
+            yaml: ${{ steps.filter.outputs.yaml }}
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v3
+            - name: Filter Changes
+              uses: dorny/paths-filter@v2
+              id: filter
+              with:
+                  filters: |
+                      html:
+                        - "**.html"
+                      markdown:
+                        - "**.md"
+                      python:
+                        - "**.py"
+                      yaml:
+                        - "**.yaml"
+                        - "**.yml"
 
-  ci:
-    needs: filter
-    if: ${{ needs.filter.outputs.changes != '[]' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-      - name: Setup Python
-        uses: ./.github/actions/python
-      - name: Install Poetry
-        uses: ./.github/actions/poetry
-      - name: Install Virtualenv
-        uses: ./.github/actions/virtualenv
-        with:
-          groups: --only lint,test
-      - name: Lint HTML
-        if: ${{ needs.filter.outputs.html == 'true' }}
-        run: poetry run djlint . --check --lint
-      - name: Lint Markdown
-        if: ${{ needs.filter.outputs.markdown == 'true' }}
-        run: poetry run pymarkdown scan .
-      - name: Lint YAML
-        if: ${{ needs.filter.outputs.yaml == 'true' }}
-        run: poetry run yamllint .
-      - name: Lint & Test Python
-        if: ${{ needs.filter.outputs.python == 'true' }}
-        run: poetry run ruff . && poetry run pytest --cov
-      - name: Coveralls
-        if: ${{ needs.filter.outputs.python == 'true' }}
-        uses: coverallsapp/github-action@main
-        with:
-          debug: true
-          github-token: ${{ github.token }}
+    ci:
+        needs: filter
+        if: ${{ needs.filter.outputs.changes != '[]' }}
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v3
+            - name: Setup Python
+              uses: ./.github/actions/python
+            - name: Install Poetry
+              uses: ./.github/actions/poetry
+            - name: Install Virtualenv
+              uses: ./.github/actions/virtualenv
+              with:
+                  groups: --only lint,test
+            - name: Lint HTML
+              if: ${{ needs.filter.outputs.html == 'true' }}
+              run: poetry run djlint . --check --lint
+            - name: Lint Markdown
+              if: ${{ needs.filter.outputs.markdown == 'true' }}
+              run: poetry run pymarkdown scan .
+            - name: Lint YAML
+              if: ${{ needs.filter.outputs.yaml == 'true' }}
+              run: poetry run yamllint .
+            - name: Lint & Test Python
+              if: ${{ needs.filter.outputs.python == 'true' }}
+              run: poetry run ruff . && poetry run pytest --cov
+            - name: Coveralls
+              if: ${{ needs.filter.outputs.python == 'true' }}
+              uses: coverallsapp/github-action@main
+              with:
+                  debug: true
+                  github-token: ${{ github.token }}

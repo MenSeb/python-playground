@@ -3,9 +3,9 @@ name: Setup Python
 description: Setup python with pyproject
 
 runs:
-  using: composite
-  steps:
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version-file: pyproject.toml
+    using: composite
+    steps:
+        - name: Setup Python
+          uses: actions/setup-python@v4
+          with:
+              python-version-file: pyproject.toml

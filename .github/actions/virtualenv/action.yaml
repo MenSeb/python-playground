@@ -3,20 +3,20 @@ name: Virtualenv
 description: Cache/Install Virtualenv
 
 inputs:
-  groups:
-    required: false
-    description: install specific dependency groups
+    groups:
+        required: false
+        description: install specific dependency groups
 
 runs:
-  using: composite
-  steps:
-    - name: Cache Virtualenv
-      id: cache-venv
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pypoetry/virtualenvs
-        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
-    - name: Install Virtualenv
-      shell: bash
-      if: steps.cache-venv.outputs.cache-hit != true
-      run: poetry install --no-root ${{ inputs.groups }}
+    using: composite
+    steps:
+        - name: Cache Virtualenv
+          id: cache-venv
+          uses: actions/cache@v3
+          with:
+              path: ~/.cache/pypoetry/virtualenvs
+              key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+        - name: Install Virtualenv
+          shell: bash
+          if: steps.cache-venv.outputs.cache-hit != true
+          run: poetry install --no-root ${{ inputs.groups }}

@@ -3,43 +3,43 @@ name: FTP Setup
 # description: Setup logic to deploy FTP.
 
 on:
-  workflow_call:
-  workflow_dispatch:
-  # workflow_run:
-  #   branches: [main]
-  #   types: [completed]
-  #   workflows: [CI]
+    workflow_call:
+    workflow_dispatch:
+    # workflow_run:
+    #   branches: [main]
+    #   types: [completed]
+    #   workflows: [CI]
 
 env:
-  dir: tmp
+    dir: tmp
 
 jobs:
-  filter:
-    if: |
-      github.event_name != 'workflow_dispatch' &&
-      github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
-    outputs:
-      source: ${{ steps.filter.outputs.source }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-      - name: Filter Changes
-        uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: |
-            source: src/**
+    filter:
+        if: |
+            github.event_name != 'workflow_dispatch' &&
+            github.event.workflow_run.conclusion == 'success'
+        runs-on: ubuntu-latest
+        outputs:
+            source: ${{ steps.filter.outputs.source }}
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v3
+            - name: Filter Changes
+              uses: dorny/paths-filter@v2
+              id: filter
+              with:
+                  filters: |
+                      source: src/**
 
-  ftp-push:
-    needs: filter
-    if: needs.filter.outputs.source == 'true'
-    uses: ./.github/workflows/ftp-deploy.yaml
-    secrets: inherit
+    ftp-push:
+        needs: filter
+        if: needs.filter.outputs.source == 'true'
+        uses: ./.github/workflows/ftp-deploy.yaml
+        secrets: inherit
 
-  ftp-dispatch:
-    if: |
-      github.event_name == 'workflow_dispatch' &&
-      github.event.ref == 'refs/heads/main'
-    uses: ./.github/workflows/ftp-deploy.yaml
-    secrets: inherit
+    ftp-dispatch:
+        if: |
+            github.event_name == 'workflow_dispatch' &&
+            github.event.ref == 'refs/heads/main'
+        uses: ./.github/workflows/ftp-deploy.yaml
+        secrets: inherit
