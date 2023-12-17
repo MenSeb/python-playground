@@ -1,0 +1,33 @@
+{% extends "pages/base.jinja" %}
+{% block main %}
+    <section class="section page-spider">
+        <form id="form-spider">
+            <input type="text"
+                   name="url"
+                   placeholder="Type a website URL"
+                   value="https://www.webscraper.io/test-sites" />
+            <button type="submit">crawl website</button>
+        </form>
+        <section class="web-spider">
+            <header class="web-spider-header">
+                <div class="container stats">
+                    <span class="span websites">5</span>
+                    <span class="span urls">45</span>
+                </div>
+            </header>
+            <div class="container canvas">
+                <div class="node"></div>
+            </div>
+            <footer class="web-spider-footer">
+                <div class="container metadata">
+                    <span class="span status">Done/Error/?</span>
+                    <span class="span website">https://webscraper.io/{endpoint}</span>
+                </div>
+                <div class="container controls">
+                    <button class="button" type="button" id="crawl">crawl website</button>
+                    <button class="button" type="button" id="visit">visit website</button>
+                </div>
+            </footer>
+        </section>
+    </section>
+{% endblock main %}
