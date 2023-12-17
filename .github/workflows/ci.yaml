@@ -14,8 +14,8 @@ jobs:
             pull-requests: read
         outputs:
             changes: ${{ steps.filter.outputs.changes }}
-            html: ${{ steps.filter.outputs.html }}
             markdown: ${{ steps.filter.outputs.markdown }}
+            markup: ${{ steps.filter.outputs.markup }}
             python: ${{ steps.filter.outputs.python }}
             yaml: ${{ steps.filter.outputs.yaml }}
         steps:
@@ -26,10 +26,10 @@ jobs:
               id: filter
               with:
                   filters: |
-                      html:
-                        - "**.html"
                       markdown:
                         - "**.md"
+                      markup:
+                        - "**.jinja"
                       python:
                         - "**.py"
                       yaml:
@@ -51,12 +51,12 @@ jobs:
               uses: ./.github/actions/virtualenv
               with:
                   groups: --only lint,test
-            - name: Lint HTML
-              if: ${{ needs.filter.outputs.html == 'true' }}
-              run: poetry run djlint . --check --lint
             - name: Lint Markdown
               if: ${{ needs.filter.outputs.markdown == 'true' }}
               run: poetry run pymarkdown scan .
+            - name: Lint Markup
+              if: ${{ needs.filter.outputs.markup == 'true' }}
+              run: poetry run djlint . --check --lint
             - name: Lint YAML
               if: ${{ needs.filter.outputs.yaml == 'true' }}
               run: poetry run yamllint .

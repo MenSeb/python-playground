@@ -53,8 +53,11 @@ data_file = "coverage/.coverage"
 omit = ["**/__init__.py", "**/__main__.py"]
 
 [tool.djlint]
-use_gitignore = true
+custom_html = "circle,defs,g,line,path,rect,svg,symbol,text,use"
 ignore = "H006"
+extension = ".jinja"
+profile = "jinja"
+use_gitignore = true
 
 [tool.mypy]
 ignore_missing_imports = true
