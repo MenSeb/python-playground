@@ -22,7 +22,7 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python",
 ]
-packages = [{ include = "*", from = "src" }]
+packages = [{ include = "src" }, { include = "tools" }]
 include = [{ path = "tests", format = "sdist" }]
 exclude = []
 
