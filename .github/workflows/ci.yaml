@@ -63,9 +63,9 @@ jobs:
             - name: Lint & Test Python
               if: ${{ needs.filter.outputs.python == 'true' }}
               run: poetry run ruff . && poetry run pytest --cov
-            - name: Coveralls
-              if: ${{ needs.filter.outputs.python == 'true' }}
-              uses: coverallsapp/github-action@main
-              with:
-                  debug: true
-                  github-token: ${{ github.token }}
+              # - name: Coveralls
+              #   if: ${{ needs.filter.outputs.python == 'true' }}
+              #   uses: coverallsapp/github-action@main
+              #   with:
+              #       debug: true
+              #       github-token: ${{ github.token }}
