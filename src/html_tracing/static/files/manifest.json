@@ -1,0 +1,16 @@
+{
+    "id": "PythonPlayground",
+    "name": "PythonPlayground",
+    "short_name": "PythonPlayground",
+    "icons": [
+        {
+            "src": "../images/favicon.ico",
+            "sizes": "32x32",
+            "type": "image/x-icon"
+        }
+    ],
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#000000",
+    "background_color": "#ffffff"
+}

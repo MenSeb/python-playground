@@ -35,19 +35,22 @@ if proxies_refresh:
     proxies.save_active(proxies=active_proxies)"""
 
 
-app = Flask(
-    import_name=__name__,
-    static_folder="statics",
-    template_folder="templates",
-)
+app = Flask(import_name=__name__)
 
 logger.info_(msg="Server Listening...")
 
 
 @app.route("/")
+@app.route("/home")
 def route_home() -> str:
     """Render route home."""
-    return render_template("index.html")
+    return render_template("pages/home.jinja")
+
+
+@app.route("/spider")
+def route_spider() -> str:
+    """Render route spider."""
+    return render_template("pages/spider.jinja")
 
 
 @app.route("/api/spider", methods=["POST"])
