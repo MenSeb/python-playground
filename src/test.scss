@@ -1,0 +1,9 @@
+.hellow {
+    // @extend %flex-center;
+
+    display: flex;
+
+    &-world {
+        display: inline-flex;
+    }
+}
