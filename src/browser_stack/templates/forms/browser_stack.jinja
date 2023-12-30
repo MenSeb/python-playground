@@ -1,0 +1,77 @@
+<form>
+    <fieldset>
+        <legend>
+            Select URL
+        </legend>
+
+        <label>
+            <span>URL</span>
+            <input name="url"
+                   placeholder="URL..."
+                   type="url" />
+        </label>
+        <label>
+            <span>Host</span>
+            <input name="host"
+                   maxlength="255"
+                   pattern="(\d+\.){3}\d+"
+                   placeholder="Host..."
+                   type="text"
+                   value="127.0.0.1" />
+        </label>
+        <label>
+            <span>Port</span>
+            <input name="port"
+                   pattern="[0-9]"
+                   placeholder="Port..."
+                   type="number"
+                   value="8080" />
+        </label>
+    </fieldset>
+
+    {% include "components/select_breakpoint.jinja" %}
+
+    <fieldset>
+        <legend>
+            Select Device
+        </legend>
+        {% include "components/select_device.jinja" %}
+
+        <input aria-disabled="true"
+               disabled
+               id="input-width"
+               name="width"
+               pattern="[0-9]"
+               placeholder="width..."
+               type="number" />
+        <input aria-disabled="true"
+               disabled
+               id="input-height"
+               name="height"
+               pattern="[0-9]"
+               placeholder="height..."
+               type="number" />
+    </fieldset>
+
+    <fieldset>
+        <legend>
+            Select Browser
+        </legend>
+        {% include "components/select_browser.jinja" %}
+    </fieldset>
+
+    <div class="buttons">
+        <button type="submit">
+            <svg viewBox="0 0 24 24">
+                <path d="M18.71,7.21a1,1,0,0,0-1.42,0L9.84,14.67,6.71,11.53A1,1,0,1,0,5.29,13l3.84,3.84a1,1,0,0,0,1.42,0l8.16-8.16A1,1,0,0,0,18.71,7.21Z" />
+            </svg>
+            <span>Submit</span>
+        </button>
+        <button type="reset">
+            <svg viewBox="0 0 24 24">
+                <path d="M19,11H13V5a1,1,0,0,0-2,0v6H5a1,1,0,0,0,0,2h6v6a1,1,0,0,0,2,0V13h6a1,1,0,0,0,0-2Z" />
+            </svg>
+            <span>Reset</span>
+        </button>
+    </div>
+</form>

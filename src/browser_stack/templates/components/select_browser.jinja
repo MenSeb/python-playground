@@ -1,0 +1,18 @@
+{% set placeholder = "select browser..." %}
+<select class="select"
+        id="select-browser"
+        name="browser"
+        required>
+
+    <option class="option"
+            value="">
+        {{- placeholder -}}
+    </option>
+
+    {% for browser in context.browsers %}
+        <option class="option"
+                value="{{ browser }}">
+            {{- browser -}}
+        </option>
+    {% endfor %}
+</select>
