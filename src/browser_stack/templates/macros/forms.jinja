@@ -1,0 +1,9 @@
+{% from 'macros/utilities.jinja' import spread %}
+{% macro label(text) %}
+    <label {{ spread(kwargs) }}>
+        <span>{{- text -}}</span>
+        {% if caller %}
+            {{ caller() }}
+        {% endif %}
+    </label>
+{% endmacro %}

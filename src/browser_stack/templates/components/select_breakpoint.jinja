@@ -1,0 +1,19 @@
+<fieldset class="breakpoints">
+    <legend class="breakpoints-legend">
+        Select Breakpoint
+    </legend>
+
+    {% for key, breakpoint in context.breakpoints %}
+        <label class="breakpoints-label">
+            <input class="breakpoints-input"
+                   id="breakpoint-{{ key }}"
+                   name="breakpoint"
+                   type="radio"
+                   value="{{ breakpoint.value }}" />
+
+            <span class="breakpoints-text">{{ breakpoint.name }}</span>
+
+            {% include "icons/" ~ key ~ ".svg" %}
+        </label>
+    {% endfor %}
+</fieldset>

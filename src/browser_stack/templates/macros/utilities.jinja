@@ -1,0 +1,21 @@
+{% macro format_key(key) %}
+    {{ key | replace('_', '-') }}
+{% endmacro %}
+
+{% macro format_val(val) %}
+    {%- if val is boolean -%}
+        {{ val | lower }}
+    {%- else -%}
+        {{ val }}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro spread(obj) %}
+    {% for key, val in obj.items() %}
+        {% if val is not none %}
+            {{ format_key(key) }}="{{ format_val(val) }}"
+        {% else %}
+            {{ key }}
+        {% endif %}
+    {% endfor %}
+{% endmacro %}

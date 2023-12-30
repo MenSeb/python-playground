@@ -1,0 +1,18 @@
+<select class="select device"
+        id="select-device"
+        name="device">
+        <option class="option"
+                data-height=""
+                data-width=""
+                value="">Select device...</option>
+        <option class="option"
+                data-height=""
+                data-width=""
+                value="custom">Custom</option>
+        {% for key, device in context.devices %}
+                <option class="option"
+                        data-height="{{ device.height }}"
+                        data-width="{{ device.width }}"
+                        value="{{ key }}">{{ device.name }} | {{ device.width }} x {{ device.height }}</option>
+        {% endfor %}
+</select>

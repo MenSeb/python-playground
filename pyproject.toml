@@ -53,11 +53,14 @@ data_file = "coverage/.coverage"
 omit = ["**/__init__.py", "**/__main__.py"]
 
 [tool.djlint]
-custom_html = "circle,defs,g,line,path,rect,svg,symbol,text,use"
+custom_html = "circle,defs,ellipse,g,line,path,radialGradient,rect,stop,svg,symbol,text,use"
 ignore = "H006"
 extension = ".jinja"
 profile = "jinja"
 use_gitignore = true
+line_break_after_multiline_tag = true
+max_attribute_length = 1
+max_blank_lines = 1
 
 [tool.mypy]
 ignore_missing_imports = true
@@ -122,6 +125,7 @@ pandas = "^2.1.1"
 aiohttp = "^3.9.1"
 aiodns = "^3.1.1"
 jinja2 = "^3.1.2"
+pywin32 = "^306"
 
 
 [tool.poetry.group.dev.dependencies]
